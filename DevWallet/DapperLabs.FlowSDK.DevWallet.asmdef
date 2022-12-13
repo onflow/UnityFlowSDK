@@ -1,0 +1,20 @@
+{
+    "name": "DapperLabs.FlowSDK.DevWallet",
+    "rootNamespace": "DapperLabs.Flow.Sdk.DevWallet",
+    "references": [
+        "GUID:5a7736b2de016c948b5a0065afe04024",
+        "GUID:c598d26f0f0031848b6356b34bf18fad"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "DapperLabs.FlowSDK.BouncyCastle.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

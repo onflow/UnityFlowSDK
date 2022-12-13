@@ -1,0 +1,20 @@
+{
+    "name": "DapperLabs.FlowSDK.Unity.Editor",
+    "rootNamespace": "DapperLabs.Flow.Sdk.Unity",
+    "references": [
+        "GUID:c598d26f0f0031848b6356b34bf18fad",
+        "GUID:5a7736b2de016c948b5a0065afe04024",
+        "GUID:490dca04981578140b059a175e72a800"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

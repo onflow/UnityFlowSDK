@@ -1,0 +1,64 @@
+{
+  "name": "com.dapperlabs.flowsdk",
+  "version": "1.0.1",
+  "displayName": "Flow SDK",
+  "description": "Integrate your Unity app with the Flow blockchain.",
+  "unity": "2021.3",
+  "unityRelease": "3f1",
+  "documentationUrl": "https://developers.flow.com/tools/unity-sdk",
+  "changelogUrl": "https://developers.flow.com/tools/unity-sdk/changelog",
+  "licensesUrl": "https://developers.flow.com/tools/unity-sdk/license",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
+  },
+  "keywords": [
+    "flow",
+    "blockchain",
+    "crypto",
+	"dapper",
+	"nft",
+	"web3",
+	"dao",
+	"cadence",
+	"dapp",
+	"cryptocurrency",
+	"distributed",
+	"sdk",
+	"smart",
+	"contract",
+	"token",
+	"wallet",
+	"block",
+	"chain",
+	"coin",
+	"decentralized",
+	"ethereum",
+	"meta"
+  ],
+  "author": {
+    "name": "Dapper Labs",
+    "url": "https://www.dapperlabs.com/"
+  },
+  "samples": [
+    {
+      "displayName": "FlowControl Quickstart Code Sample",
+      "description": "A VERY simple example of performing the most common basic tasks on emulator.",
+      "path": "Samples~/FlowControlQuickstartCodeSample"
+    },
+	{
+      "displayName": "FlowSDK Usage Demo",
+      "description": "Demonstration of all the API calls in FlowSDK",
+      "path": "Samples~/SamplesFlowSDKUsage"
+    },
+	{
+	  "displayName": "Flow Words",
+	  "description": "A word game built on Flow",
+	  "path": "Samples~/FlowWords"
+	},
+	{
+	  "displayName": "Flow Words Tutorial Assets",
+	  "description": "Contains the assets required for following the Flow Words tutorial",
+	  "path": "Samples~/FlowWordsAssetsTutorial"
+	}
+  ]
+}

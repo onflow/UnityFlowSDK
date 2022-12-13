@@ -1,0 +1,17 @@
+{
+    "name": "DapperLabs.FlowSDK.Runtime",
+    "rootNamespace": "DapperLabs.Flow.Sdk",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "DapperLabs.FlowSDK.BouncyCastle.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

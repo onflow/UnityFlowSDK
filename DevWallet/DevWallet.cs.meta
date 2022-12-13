@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 853b01ebc9c79bd4f80783e34a01e0fa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - AccountDialogPrefab: {fileID: 14990977639655857, guid: 2355e4449af5f1149a02d39a25ac81a1,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

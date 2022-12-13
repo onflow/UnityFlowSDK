@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e257d130f47ae7b479953871aa021a19, type: 3}
+  m_Name: FlowControlData
+  m_EditorClassIdentifier: 
+  _emulatorSettings:
+    emulatorDataDirectory: 
+    flowExecutablePathOverride: 
+    runEmulatorInPlayMode: 1
+    persistData: 1
+    killOtherFlow: 1
+    verbose: 1
+    emulatorEndpoint: http://127.0.0.1:8888/v1
+  _textReplacements:
+  - description: 
+    originalText: 
+    replacementText: 
+    active: 0
+    _applyToAccounts: []
+    _applyToGateways: []
+  _accounts:
+  - _name: emulator_service_account
+    infoKeys:
+    - Private Key
+    - Address
+    - Protocol
+    infoValues:
+    - 2177ec179db199035ac3708fcc0d105edfc3e0d7bdaeee6602bcc29ccf80c1b8
+    - 0xf8d6e0586b0a20c7
+    - gRPC
+    _gatewayName: Emulator
+  - _name: user1
+    infoKeys:
+    - Protocol
+    - Private Key
+    - Address
+    infoValues:
+    - HTTP
+    - d841c856b1dc687b6186fcb55faebb1dd47166b5ddb71f940cbd9853bd50f335
+    - 0x01cf0e2f2f715450
+    _gatewayName: Emulator
+  - _name: user2
+    infoKeys:
+    - Address
+    - Private Key
+    infoValues:
+    - 0x179b6b1cb6755e31
+    - 120a675ac81a81f530d8e04ea510f7159b25549b232941a186601cf4ce4c8605
+    _gatewayName: Emulator
+  - _name: admin1
+    infoKeys:
+    - Address
+    - Private Key
+    infoValues:
+    - 0xf3fcd2c1a78f5eee
+    - 0b62fbaa2249589faae534bf2cb18f233145e07b04b310d764360f3e2f095cad
+    _gatewayName: Emulator
