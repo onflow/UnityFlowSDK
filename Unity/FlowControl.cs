@@ -348,13 +348,13 @@ namespace DapperLabs.Flow.Sdk.Unity
             {
                 if (soTask.IsCompleted)
                 {
-                    _emulatorOutput += Regex.Replace(soTask.Result, @"\\x1b\[(\d+;)*(\d+)?[ABCDHJKfmsu]", "") + "\n\n";
+                    _emulatorOutput += Regex.Replace(soTask.Result, @"\e\[(\d+;)*(\d+)?[ABCDHJKfmsu]", "") + "\n\n";
                     soTask = EmulatorProcess.StandardOutput.ReadLineAsync();
                 }
 
                 if (seTask.IsCompleted)
                 {
-                    _emulatorOutput += "<color=red>" + Regex.Replace(seTask.Result, @"\\x1b\[(\d+;)*(\d+)?[ABCDHJKfmsu]", "") + "</color>\n\n";
+                    _emulatorOutput += "<color=red>" + Regex.Replace(seTask.Result, @"\e\[(\d+;)*(\d+)?[ABCDHJKfmsu]", "") + "</color>\n\n";
                     seTask = EmulatorProcess.StandardError.ReadLineAsync();
                 }
             }

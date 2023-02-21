@@ -13,6 +13,9 @@ namespace DapperLabs.Flow.Sdk
             HTTP
         }
 
+        public static string MAINNETURL = "https://rest-mainnet.onflow.org/v1";
+        public static string TESTNETURL = "https://rest-testnet.onflow.org/v1";
+        
         public string NetworkUrl { get; set; } = "http://localhost:8888/v1";
         public NetworkProtocol Protocol { get; set; } = NetworkProtocol.HTTP;
     }

@@ -1,3 +1,6 @@
+## Version 1.0.2
+- Fixed an issue where the latest Flow emulator would cause the editor to freeze
+
 ## Version 1.0.1
 
 - Added wallet authentication to contract and account creation tools
