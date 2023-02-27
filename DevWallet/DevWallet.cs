@@ -4,10 +4,15 @@ using UnityEngine;
 using DapperLabs.Flow.Sdk.Unity;
 using DapperLabs.Flow.Sdk.Crypto;
 using DapperLabs.Flow.Sdk.DataObjects;
+using System;
+using Newtonsoft.Json;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
+// suppress async without await warning as DevWallet is synchronous
+#pragma warning disable CS1998
 
 namespace DapperLabs.Flow.Sdk.DevWallet
 {
@@ -19,7 +24,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
     /// sign any transactions. 
     /// WARNING: DO NOT use this for production - it is NOT secure. 
     /// </summary>
-    public class DevWalletProvider : ScriptableObject, IWallet
+    public class DevWalletProvider : IWallet
     {
         SdkAccount authorizedAccount = null;
         System.Action<string> OnAuthSuccessCallback = null;
@@ -32,13 +37,18 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             Debug.LogWarning("WARNING: You are using DevWallet - this is only intended to be used for development purposes on emulator and testnet. DO NOT use this for Production, as it is NOT secure.");
         }
 
+        void IWallet.Init(WalletConfig config)
+        {
+
+        }
+
         /// <summary>
         /// Displays a list of accounts from the Accounts tab of the Flow Control Window. 
         /// </summary>
         /// <param name="username">The username of the account to be authenticated. If blank, a dialog will appear to select an account.</param>
         /// <param name="OnAuthSuccess">Called when the user selects an account and clicks Ok.</param>
         /// <param name="OnAuthFailed">Called when the user clicks Cancel.</param>
-        void IWallet.Authenticate(string username, System.Action<string> OnAuthSuccess, System.Action OnAuthFailed)
+        async Task IWallet.Authenticate(string username, System.Action<string> OnAuthSuccess, System.Action OnAuthFailed)
         {
             OnAuthSuccessCallback = OnAuthSuccess;
             OnAuthFailedCallback = OnAuthFailed;
@@ -65,7 +75,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             // Instantiate the prefab which shows a list of dev accounts to select from
             if (accountDialog == null)
             {
-                accountDialog = Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
+                accountDialog = UnityEngine.Object.Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
             }
 
             // Get the script component and initialize it
@@ -81,7 +91,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
                 OnAuthSuccessCallback(authAccount);
             }
 
-            Destroy(accountDialog);
+            UnityEngine.Object.Destroy(accountDialog);
         }
 
         private void OnAuthenticateFailed()
@@ -91,7 +101,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
                 OnAuthFailedCallback();
             }
 
-            Destroy(accountDialog);
+            UnityEngine.Object.Destroy(accountDialog);
         }
 
         /// <summary>
@@ -142,7 +152,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             // Instantiate the prefab which shows a list of dev accounts to select from
             if (approveDialog == null)
             {
-                approveDialog = Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
+                approveDialog = UnityEngine.Object.Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
             }
 
             // Get the script component and initialize it
@@ -173,7 +183,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
                 await Task.Delay(1000);
             }
 
-            Destroy(approveDialog);
+            UnityEngine.Object.Destroy(approveDialog);
 
             return signature;
         }
@@ -208,7 +218,7 @@ namespace DapperLabs.Flow.Sdk.DevWallet
         private byte[] SignAuthorizationEnvelope(FlowTransaction txn, string privateKeyHex)
         {
             ISigner signer = Utilities.CreateSigner(privateKeyHex, SignatureAlgo.ECDSA_P256, HashAlgo.SHA3_256);
-
+            
             byte[] canonicalAuthorizationEnvelope = Rlp.EncodedCanonicalAuthorizationEnvelope(txn);
             byte[] message = DomainTag.AddTransactionDomainTag(canonicalAuthorizationEnvelope);
             return signer.Sign(message);
@@ -225,3 +235,5 @@ namespace DapperLabs.Flow.Sdk.DevWallet
         }
     }
 }
+
+#pragma warning restore CS1998

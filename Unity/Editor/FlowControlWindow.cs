@@ -85,27 +85,38 @@ namespace DapperLabs.Flow.Sdk.Unity
 
             if (FlowControl.Data == null)
             {
-                FlowControlData[] dataList = Resources.FindObjectsOfTypeAll<FlowControlData>();
-                if (dataList.Length > 0)
+                FlowControlData flowControlData = AssetDatabase.LoadAssetAtPath<FlowControlData>("Assets/Resources/FlowControlData.asset");
+
+                if (flowControlData != null)
                 {
-                    FlowControl.Data = dataList[0];
+                    FlowControl.Data = flowControlData;
+                    EditorUtility.SetDirty(FlowControl.Data);
+                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
                 }
                 else
                 {
-                    FlowControlData newFCD = CreateInstance<FlowControlData>();
-                    Directory.CreateDirectory($"Assets/Resources");
-                    AssetDatabase.CreateAsset(newFCD, $"Assets/Resources/FlowControlData.asset");
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.Refresh();
-                    FlowControl.Data = newFCD;
+                    FlowControlData[] dataList = Resources.FindObjectsOfTypeAll<FlowControlData>();
+                    if (dataList.Length > 0)
+                    {
+                        FlowControl.Data = dataList[0];
+                    }
+                    else
+                    {
+                        FlowControlData newFCD = CreateInstance<FlowControlData>();
+                        Directory.CreateDirectory($"Assets/Resources");
+                        AssetDatabase.CreateAsset(newFCD, $"Assets/Resources/FlowControlData.asset");
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                        FlowControl.Data = newFCD;
+                    }
+                    EditorUtility.SetDirty(FlowControl.Data);
+                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
                 }
-                EditorUtility.SetDirty(FlowControl.Data);
-                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             }
             
             CheckForFlowExecutable();
 
-            FlowSDK.RegisterWalletProvider(ScriptableObject.CreateInstance<DevWalletProvider>());
+            FlowSDK.RegisterWalletProvider(new DevWalletProvider());
         }
 
         private void OnDestroy()
@@ -387,6 +398,11 @@ namespace DapperLabs.Flow.Sdk.Unity
                                                     Application.OpenURL(url);
                                                 }
                                             }
+                                        }
+                                        else
+                                        {
+                                            // reset result so that we can poll for it again
+                                            toolsContractResult = null;
                                         }
                                     }
                                 }

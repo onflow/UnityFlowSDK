@@ -17,7 +17,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using DapperLabs.Flow.Sdk.Exceptions;
 
-[assembly: InternalsVisibleTo("DapperLabs.FlowSDK.DevWallet")]
+[assembly: InternalsVisibleTo("DapperLabs.FlowSDK.DevWallet"),
+           InternalsVisibleTo("DapperLabs.FlowSDK.WalletConnect")]
 
 namespace DapperLabs.Flow.Sdk
 {

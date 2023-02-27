@@ -81,7 +81,7 @@ namespace QuickstartGuide
             #region Create SdkAccount and FlowControl.Account Example
             outputText.text += "Creating SdkAccount:  ";
 
-            FlowSDK.RegisterWalletProvider(ScriptableObject.CreateInstance<DevWalletProvider>());
+            FlowSDK.RegisterWalletProvider(new DevWalletProvider());
 
             string authAddress = "";
             FlowSDK.GetWalletProvider().Authenticate("", (string address) =>

@@ -26,6 +26,22 @@ namespace DapperLabs.Flow.Sdk.Cadence
         {
             Value = value;
         }
+
+        public override string GetValue()
+        {
+            string ret = "[";
+            for (int i = 0; i < Value.Length; i++)
+            {
+                ret += JsonConvert.SerializeObject(Value[i]);
+                if (i < Value.Length - 1)
+                {
+                    ret += ", ";
+                }
+            }
+            ret += "]";
+
+            return ret;
+        }
     }
 
     /// <summary>

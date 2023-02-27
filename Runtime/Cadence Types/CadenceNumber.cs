@@ -32,6 +32,11 @@ namespace DapperLabs.Flow.Sdk.Cadence
             Type = type.ToString();
             Value = value;
         }
+
+        public override string GetValue()
+        {
+            return Value;
+        }
     }
 
     /// <summary>

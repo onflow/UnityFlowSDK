@@ -29,5 +29,15 @@ namespace DapperLabs.Flow.Sdk.Cadence
         {
             Value = value;
         }
+
+        public override string GetValue()
+        {
+            if (Value == null)
+            {
+                return "null";
+            }
+
+            return Value.GetValue();
+        }
     }
 }

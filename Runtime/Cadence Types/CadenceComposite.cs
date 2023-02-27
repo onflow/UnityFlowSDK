@@ -92,6 +92,11 @@ namespace DapperLabs.Flow.Sdk.Cadence
 
             return value.As<T>();
         }
+
+        public override string GetValue()
+        {
+            return JsonConvert.SerializeObject(Value);
+        }
     }
 
     /// <summary>

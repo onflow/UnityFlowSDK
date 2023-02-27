@@ -34,7 +34,7 @@ namespace DapperLabs.Flow.Sdk.Network
                 string responseBody = await response.Content.ReadAsStringAsync();
 
                 responseBody = responseBody.Replace("\"", "");
-                byte[] responseBytes = Convert.FromBase64String(responseBody);
+                byte[] responseBytes = System.Convert.FromBase64String(responseBody);
                 string responseJson = Encoding.UTF8.GetString(responseBytes);
 
                 return new FlowScriptResponse
@@ -61,7 +61,7 @@ namespace DapperLabs.Flow.Sdk.Network
                 string responseBody = await response.Content.ReadAsStringAsync();
 
                 responseBody = responseBody.Replace("\"", "");
-                byte[] responseBytes = Convert.FromBase64String(responseBody);
+                byte[] responseBytes = System.Convert.FromBase64String(responseBody);
                 string responseJson = Encoding.UTF8.GetString(responseBytes);
 
                 return new FlowScriptResponse
@@ -88,7 +88,7 @@ namespace DapperLabs.Flow.Sdk.Network
                 string responseBody = await response.Content.ReadAsStringAsync();
 
                 responseBody = responseBody.Replace("\"", "");
-                byte[] responseBytes = Convert.FromBase64String(responseBody);
+                byte[] responseBytes = System.Convert.FromBase64String(responseBody);
                 string responseJson = Encoding.UTF8.GetString(responseBytes);
 
                 return new FlowScriptResponse

@@ -1,8 +1,9 @@
 using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.Cadence;
+using DapperLabs.Flow.Sdk.Crypto;
 using DapperLabs.Flow.Sdk.DataObjects;
 using DapperLabs.Flow.Sdk.Unity;
-using DapperLabs.Flow.Sdk.DevWallet;
+using DapperLabs.Flow.Sdk.WalletConnect;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +14,6 @@ namespace FlowWords
 {
     public class FlowInterface : MonoBehaviour
     {
-        // FLOW account object - set via Login screen.
-        [Header("FLOW Account")]
-        public FlowControl.Account FLOW_ACCOUNT = null;
-
         // The TextAssets containing Cadence scripts and transactions that will be used for the game.
         [Header("Scripts and Transactions")]
         [SerializeField] TextAsset loginTxn;
@@ -53,8 +50,38 @@ namespace FlowWords
                 Destroy(this);
             }
 
-            // Register DevWallet
-            FlowSDK.RegisterWalletProvider(ScriptableObject.CreateInstance<DevWalletProvider>());
+            // Set up SDK to access TestNet
+            FlowConfig flowConfig = new FlowConfig()
+            {
+                NetworkUrl = "https://rest-testnet.onflow.org/v1",  // testnet
+                Protocol = FlowConfig.NetworkProtocol.HTTP
+            };
+            FlowSDK.Init(flowConfig);
+
+            // Create WalletConnect wallet provider
+            IWallet walletProvider = new WalletConnectProvider();
+            walletProvider.Init(new WalletConnectConfig
+            {
+                ProjectId = "fb087df84af28bc20669151a5efb3ff7", // insert Project ID from Wallet Connect dashboard
+                ProjectDescription = "A simple word guessing game built on FLOW!",
+                ProjectIconUrl = "https://walletconnect.com/meta/favicon.ico",
+                ProjectName = "FlowWords",
+                ProjectUrl = "https://dapperlabs.com"
+            });
+
+            // Register WalletConnect wallet provider with SDK
+            FlowSDK.RegisterWalletProvider(walletProvider);
+        }
+
+        private string DoTextSubstitutions(string input)
+        {
+            FlowControl.Account fa = new FlowControl.Account
+            {
+                GatewayName = "Flow Testnet",
+                AccountConfig = new Dictionary<string, string> { { "Address", FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address } }
+            };
+
+            return fa.DoTextReplacements(input);
         }
 
         /// <summary>
@@ -65,7 +92,7 @@ namespace FlowWords
         /// <param name="onFailureCallback">Function that should be called when login fails</param>
         public void Login(string username, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
         {
-            // Authenticate an account with DevWallet
+            // Authenticate an account
             FlowSDK.GetWalletProvider().Authenticate("", // blank string will show list of accounts from Accounts tab of Flow Control Window
                                                     (string flowAddress) => StartCoroutine(OnAuthSuccess(username, flowAddress, onSuccessCallback, onFailureCallback)), 
                                                     onFailureCallback);
@@ -81,11 +108,9 @@ namespace FlowWords
         /// <returns></returns>
         private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
         {
-            // get flow account
-            FLOW_ACCOUNT = FlowControl.Data.Accounts.FirstOrDefault(x => x.AccountConfig["Address"] == flowAddress);
-            
             // execute log in transaction on chain
-            Task<FlowTransactionResult> task = FLOW_ACCOUNT.SubmitAndWaitUntilExecuted(loginTxn.text, new CadenceString(username));
+            Task<FlowTransactionResult> task = Transactions.SubmitAndWaitUntilSealed(DoTextSubstitutions(loginTxn.text), new CadenceString(username));
+
             while (!task.IsCompleted)
             {
                 int dots = ((int)(Time.time * 2.0f) % 4);
@@ -109,7 +134,6 @@ namespace FlowWords
         /// </summary>
         internal void Logout()
         {
-            FLOW_ACCOUNT = null;
             FlowSDK.GetWalletProvider().Unauthenticate();
         }
 
@@ -121,7 +145,7 @@ namespace FlowWords
         public IEnumerator GetGameDataFromChain(System.Action<double, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
         {
             // execute getCurrentGameState transaction on chain
-            Task<FlowTransactionResult> getStateTask = FLOW_ACCOUNT.SubmitAndWaitUntilExecuted(getCurrentGameStateTxn.text);
+            Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(DoTextSubstitutions(getCurrentGameStateTxn.text));
             while (!getStateTask.IsCompleted)
             {
                 int dots = ((int)(Time.time * 2.0f) % 4);
@@ -215,7 +239,7 @@ namespace FlowWords
         public IEnumerator SubmitGuess(string word, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
         {
             // submit word via checkWord script to FLOW chain to check if word is valid
-            Task<FlowScriptResponse> checkWordTask = FLOW_ACCOUNT.ExecuteScript(checkWordScript.text, new CadenceString(word.ToLower()));
+            Task<FlowScriptResponse> checkWordTask = Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(checkWordScript.text), new CadenceString(word.ToLower()));
 
             while (!checkWordTask.IsCompleted)
             {
@@ -239,7 +263,7 @@ namespace FlowWords
             }
 
             // word is valid, submit guess via transaction to FLOW chain
-            Task<FlowTransactionResult> submitGuessTask = FLOW_ACCOUNT.SubmitAndWaitUntilExecuted(submitGuessTxn.text, new CadenceString(word.ToLower()));
+            Task<FlowTransactionResult> submitGuessTask = Transactions.SubmitAndWaitUntilExecuted(DoTextSubstitutions(submitGuessTxn.text), new CadenceString(word.ToLower()));
 
             while (!submitGuessTask.IsCompleted)
             {
@@ -287,13 +311,15 @@ namespace FlowWords
         /// <param name="onFailureCallback">Callback on failure</param>
         public IEnumerator LoadHighScoresFromChain(System.Action<List<ScoreStruct>, uint, uint, uint, uint[]> onSuccessCallback, System.Action onFailureCallback)
         {
+            string playerWalletAddress = FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address;
+
             // execute scripts to get highscore data
             Dictionary<string, Task<FlowScriptResponse>> tasks = new Dictionary<string, Task<FlowScriptResponse>>();
-            tasks.Add("GetHighScores", FLOW_ACCOUNT.ExecuteScript(GetHighScores.text));
-            tasks.Add("GetPlayerCumulativeScore", FLOW_ACCOUNT.ExecuteScript(GetPlayerCumulativeScore.text, new CadenceAddress(FLOW_ACCOUNT.AccountConfig["Address"])));
-            tasks.Add("GetPlayerWinningStreak", FLOW_ACCOUNT.ExecuteScript(GetPlayerWinningStreak.text, new CadenceAddress(FLOW_ACCOUNT.AccountConfig["Address"])));
-            tasks.Add("GetPlayerMaxWinningStreak", FLOW_ACCOUNT.ExecuteScript(GetPlayerMaxWinningStreak.text, new CadenceAddress(FLOW_ACCOUNT.AccountConfig["Address"])));
-            tasks.Add("GetGuessDistribution", FLOW_ACCOUNT.ExecuteScript(GetGuessDistribution.text, new CadenceAddress(FLOW_ACCOUNT.AccountConfig["Address"])));
+            tasks.Add("GetHighScores", Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(GetHighScores.text)));
+            tasks.Add("GetPlayerCumulativeScore", Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(GetPlayerCumulativeScore.text), new CadenceAddress(playerWalletAddress)));
+            tasks.Add("GetPlayerWinningStreak", Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(GetPlayerWinningStreak.text), new CadenceAddress(playerWalletAddress)));
+            tasks.Add("GetPlayerMaxWinningStreak", Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(GetPlayerMaxWinningStreak.text), new CadenceAddress(playerWalletAddress)));
+            tasks.Add("GetGuessDistribution", Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(GetGuessDistribution.text), new CadenceAddress(playerWalletAddress)));
 
             // wait for completion
             bool complete = false;

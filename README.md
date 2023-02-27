@@ -1,3 +1,5 @@
+***THIS IS A PRE-RELEASE OF V2.0.0 AND IS NOT CONSIDERED STABLE***
+
 # Flow SDK for Unity
 
 Welcome to the Flow SDK for Unity. This SDK allows Unity developers to integrate their games and apps with the Flow blockchain. Some of the things you can do include: 

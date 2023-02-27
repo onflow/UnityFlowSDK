@@ -1,3 +1,8 @@
+## Version 2.0.0
+- Added Wallet Connect provider
+- Added Cadence Convert feature for converting between C# and cadence
+- Added iOS as a supported platform
+
 ## Version 1.0.2
 - Fixed an issue where the latest Flow emulator would cause the editor to freeze
 

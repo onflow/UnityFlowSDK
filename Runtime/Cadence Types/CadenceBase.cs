@@ -20,5 +20,10 @@ namespace DapperLabs.Flow.Sdk.Cadence
         {
             return (T)this;
         }
+
+        public virtual string GetValue()
+        {
+            throw new System.NotImplementedException($"GetValue() not implemented for {Type}");
+        }
     }
 }

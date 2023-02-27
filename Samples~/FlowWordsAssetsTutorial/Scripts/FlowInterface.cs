@@ -1,17 +1,15 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using DapperLabs.Flow.Sdk.Unity;
+
 
 namespace FlowWordsTutorial
 {
     public class FlowInterface : MonoBehaviour
     {
-        // FLOW account object - set via Login screen.
-        [Header("FLOW Account")]
-
         // The TextAssets containing Cadence scripts and transactions that will be used for the game.
         [Header("Scripts and Transactions")]
         [SerializeField] TextAsset loginTxn;
@@ -26,6 +24,9 @@ namespace FlowWordsTutorial
         [SerializeField] TextAsset GetPlayerWinningStreak;
         [SerializeField] TextAsset GetPlayerMaxWinningStreak;
         [SerializeField] TextAsset GetGuessDistribution;
+
+        // FlowControl Account object, used to help with text replacements in scripts and transactions
+        private FlowControl.Account FLOW_ACCOUNT = null;
 
         private static FlowInterface m_instance = null;
         public static FlowInterface Instance
@@ -74,7 +75,7 @@ namespace FlowWordsTutorial
         /// <returns></returns>
         private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
         {
-            // get flow account from address
+            // get FLOW account - we are only going to use this for text replacements
 
             // execute log in transaction on chain
 
@@ -141,6 +142,8 @@ namespace FlowWordsTutorial
         /// <param name="onFailureCallback">Callback on failure</param>
         public IEnumerator LoadHighScoresFromChain(System.Action<List<ScoreStruct>, uint, uint, uint, uint[]> onSuccessCallback, System.Action onFailureCallback)
         {
+            // get player's wallet public address
+
             // execute scripts to get highscore data
 
             // wait for completion

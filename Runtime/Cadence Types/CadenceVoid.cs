@@ -9,5 +9,10 @@ namespace DapperLabs.Flow.Sdk.Cadence
     {
         [JsonProperty("type")]
         public override string Type => "Void";
+
+        public override string GetValue()
+        {
+            return "";
+        }
     }
 }

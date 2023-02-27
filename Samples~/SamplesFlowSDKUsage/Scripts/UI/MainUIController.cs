@@ -10,7 +10,9 @@ using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.DataObjects;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Unity;
+using DapperLabs.Flow.Sdk.WalletConnect;
 using DapperLabs.Flow.Sdk.DevWallet;
+using DapperLabs.Flow.Sdk.Crypto;
 
 namespace FlowSDKDemo
 {
@@ -19,6 +21,9 @@ namespace FlowSDKDemo
     /// </summary>
     public class MainUIController : MonoBehaviour
     {
+        [Header("WalletConnect QR Code Prefab")]
+        public GameObject WalletConnectQrCodeDialogPrefab;
+
         [Header("Blocks")]
         // Block inputs
         public GameObject BlocksGetByIdInput;
@@ -149,13 +154,29 @@ namespace FlowSDKDemo
 
             FlowConfig flowConfig = new FlowConfig();
 
-            flowConfig.NetworkUrl = FlowControl.Data.EmulatorSettings.emulatorEndpoint ?? "http://localhost:8888/v1";             // local emulator
+            flowConfig.NetworkUrl = FlowControl.Data.EmulatorSettings.emulatorEndpoint ?? "http://localhost:8888/v1"; // local emulator
             //flowConfig.NetworkUrl = "https://rest-testnet.onflow.org/v1";  // testnet
             //flowConfig.NetworkUrl = "https://rest-mainnet.onflow.org/v1";  // mainnet
 
             flowConfig.Protocol = FlowConfig.NetworkProtocol.HTTP;
             FlowSDK.Init(flowConfig);
-            FlowSDK.RegisterWalletProvider(ScriptableObject.CreateInstance<DevWalletProvider>());
+
+            // Now register a Wallet Provider to use. 
+
+            // Register DevWallet
+            FlowSDK.RegisterWalletProvider(new DevWalletProvider());
+
+            // Register WalletConnect
+            //IWallet walletProvider = new WalletConnectProvider();
+            //walletProvider.Init(new WalletConnectConfig
+            //{
+            //    ProjectId = "", // insert Project ID from Wallet Connect dashboard
+            //    ProjectDescription = "An example description of  the project",
+            //    ProjectIconUrl = "https://walletconnect.com/meta/favicon.ico",
+            //    ProjectName = "Dapper Unity Example",
+            //    ProjectUrl = "https://dapperlabs.com"
+            //});
+            //FlowSDK.RegisterWalletProvider(walletProvider);
         }
 
         /// <summary>
@@ -861,7 +882,7 @@ transaction(argString: String, argNumber: UInt32) {
             AcctResultContracts.GetComponent<Text>().text = "";
         }
 
-        public void SignInClicked()
+        public async void SignInClicked()
         {
             if (FlowSDK.GetWalletProvider().IsAuthenticated())
             {
@@ -883,7 +904,7 @@ transaction(argString: String, argNumber: UInt32) {
             }
             else
             {
-                FlowSDK.GetWalletProvider().Authenticate("", (string authAccount) =>
+                await FlowSDK.GetWalletProvider().Authenticate("", (string authAccount) =>
                 {
                     Debug.Log($"Authenticated: {authAccount}");
 

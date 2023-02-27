@@ -129,13 +129,16 @@ namespace DapperLabs.Flow.Sdk
 					txRequest.AddEnvelopeSignature(authAccount.Address, authAccount.Keys[0].Id, signature);
 				}
 				else
-                {
-					throw new FlowException("Payer did not approve transaction.");
+				{
+					return new FlowTransactionResponse
+					{
+						Error = new FlowError("Payer did not approve transaction.")
+					};
 				}
 
 				FlowTransactionResponse txnResponse = await NetworkClient.GetClient().SubmitTransaction(txRequest);
 				if (txnResponse.Error != null)
-                {
+				{
 					return new FlowTransactionResponse
 					{
 						Error = new FlowError($"Transaction failed - {txnResponse.Error.Message}", txnResponse.Error.Exception)
@@ -195,11 +198,68 @@ namespace DapperLabs.Flow.Sdk
 		}
 
 		/// <summary>
+		/// Submits a transaction to the blockchain and waits until target status is achieved before returning
+		/// </summary>
+		/// <param name="script">The text contents of the transaction to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
+		private static async Task<FlowTransactionResult> SubmitAndWaitUntil(FlowTransactionStatus status, string text, List<CadenceBase> arguments)
+		{
+			FlowTransactionResponse response = await Submit(text, arguments);
+
+			if (response.Error != null)
+			{
+				return new FlowTransactionResult
+				{
+					Error = response.Error
+				};
+			}
+
+			FlowTransactionResult result = null;
+			FlowTransactionStatus txnStatus = FlowTransactionStatus.UNKNOWN;
+			while (txnStatus < status)
+			{
+				await Task.Delay(2000);
+				result = await GetResult(response.Id);
+				txnStatus = result.Status;
+
+				if (result.Error != null || result.ErrorMessage != string.Empty)
+				{
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Submits a transaction to the blockchain and waits until executed before returning
+		/// </summary>
+		/// <param name="script">The text contents of the transaction to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilExecuted(string text, params CadenceBase[] arguments)
+		{
+			return await SubmitAndWaitUntil(FlowTransactionStatus.EXECUTED, text, new List<CadenceBase>(arguments));
+		}
+
+		/// <summary>
+		/// Submits a transaction to the blockchain and waits until sealed before returning
+		/// </summary>
+		/// <param name="script">The text contents of the transaction to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilSealed(string text, params CadenceBase[] arguments)
+        {
+			return await SubmitAndWaitUntil(FlowTransactionStatus.SEALED, text, new List<CadenceBase>(arguments));
+		}
+
+		/// <summary>
 		/// Gets a transaction by its ID
 		/// </summary>
 		/// <param name="transactionId">The ID of the transaction</param>
 		/// <returns>A Task that will resolve into a FlowTransaction when complete</returns>
-        public static async Task<FlowTransaction> GetById(string transactionId)
+		public static async Task<FlowTransaction> GetById(string transactionId)
         {
 			try
 			{

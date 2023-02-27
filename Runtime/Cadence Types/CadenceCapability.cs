@@ -8,7 +8,7 @@ namespace DapperLabs.Flow.Sdk.Cadence
     public class CadenceCapability : CadenceBase
     {
         [JsonProperty("type")]
-        public override string Type => "String";
+        public override string Type => "Capability";
 
         [JsonProperty("value")]
         public CadenceCapabilityValue Value { get; set; }
@@ -25,6 +25,11 @@ namespace DapperLabs.Flow.Sdk.Cadence
         public CadenceCapability(CadenceCapabilityValue value)
         {
             Value = value;
+        }
+
+        public override string GetValue()
+        {
+            return JsonConvert.SerializeObject(Value);
         }
     }
 
