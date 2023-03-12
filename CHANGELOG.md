@@ -1,3 +1,6 @@
+## Version 1.0.3
+- Add Example NFT sample
+
 ## Version 1.0.2
 - Fixed an issue where the latest Flow emulator would cause the editor to freeze
 

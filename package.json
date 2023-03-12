@@ -1,6 +1,6 @@
 {
   "name": "com.dapperlabs.flowsdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "displayName": "Flow SDK",
   "description": "Integrate your Unity app with the Flow blockchain.",
   "unity": "2021.3",
@@ -59,6 +59,11 @@
 	  "displayName": "Flow Words Tutorial Assets",
 	  "description": "Contains the assets required for following the Flow Words tutorial",
 	  "path": "Samples~/FlowWordsAssetsTutorial"
-	}
+	},
+    {
+      "displayName": "Example NFT",
+      "description": "An example of minting and reading a simple NFT using the SDK",
+      "path": "Samples~/NFTExample"
+    }
   ]
 }
