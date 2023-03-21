@@ -34,7 +34,7 @@ namespace DapperLabs.Flow.Sdk.Unity
 
         //Tools window contract variables
         private int toolsContractAccountIndex = 0;
-        private TextAsset toolsContractScript = null;
+        private CadenceContractAsset toolsContractScript = null;
         private string toolsContractName = "";
         private System.Threading.Tasks.Task<DataObjects.FlowTransactionResponse> toolsContractResponse = null;
         private System.Threading.Tasks.Task<DataObjects.FlowTransactionResult> toolsContractResult = null;
@@ -42,7 +42,7 @@ namespace DapperLabs.Flow.Sdk.Unity
 
         //Tools window transaction variables
         private int toolsTransactionAccountIndex = 0;
-        private TextAsset toolsTransactionScript = null;
+        private CadenceTransactionAsset toolsTransactionScript = null;
         private System.Threading.Tasks.Task<DataObjects.FlowTransactionResponse> toolsTransactionResponse = null;
         private System.Threading.Tasks.Task<DataObjects.FlowTransactionResult> toolsTransactionResult = null;
         private bool toolsTransactionErrorLogged;
@@ -290,7 +290,7 @@ namespace DapperLabs.Flow.Sdk.Unity
                     {
                         EditorGUILayout.Space(20);
                         EditorGUILayout.LabelField("Contract: ", style, GUILayout.Width(100));
-                        toolsContractScript = EditorGUILayout.ObjectField("", toolsContractScript, typeof(TextAsset), false, GUILayout.Width(300)) as TextAsset;
+                        toolsContractScript = EditorGUILayout.ObjectField("", toolsContractScript, typeof(CadenceContractAsset), false, GUILayout.Width(300)) as CadenceContractAsset;
                         GUILayout.FlexibleSpace();
                     }
                     EditorGUILayout.EndHorizontal();
@@ -428,7 +428,7 @@ namespace DapperLabs.Flow.Sdk.Unity
                     {
                         EditorGUILayout.Space(20);
                         EditorGUILayout.LabelField("Transaction: ", style, GUILayout.Width(100));
-                        toolsTransactionScript = EditorGUILayout.ObjectField("", toolsTransactionScript, typeof(TextAsset), false, GUILayout.Width(300)) as TextAsset;
+                        toolsTransactionScript = EditorGUILayout.ObjectField("", toolsTransactionScript, typeof(CadenceTransactionAsset), false, GUILayout.Width(300)) as CadenceTransactionAsset;
                         GUILayout.FlexibleSpace();
                     }
                     EditorGUILayout.EndHorizontal();

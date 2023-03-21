@@ -8,6 +8,6 @@ namespace DapperLabs.Flow.Sdk.DataObjects
         public uint StatusCode;
         public string ErrorMessage;
         public List<FlowEvent> Events;
-		public Exceptions.FlowError Error;
-	}
+        public Exceptions.FlowError Error;
+    }
 }

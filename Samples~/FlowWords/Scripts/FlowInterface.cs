@@ -1,3 +1,4 @@
+using System;
 using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Crypto;
@@ -7,8 +8,10 @@ using DapperLabs.Flow.Sdk.WalletConnect;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using UnityEngine;
+using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
 
 namespace FlowWords
 {
@@ -16,18 +19,18 @@ namespace FlowWords
     {
         // The TextAssets containing Cadence scripts and transactions that will be used for the game.
         [Header("Scripts and Transactions")]
-        [SerializeField] TextAsset loginTxn;
-        [SerializeField] TextAsset getCurrentGameStateTxn;
-        [SerializeField] TextAsset checkWordScript;
-        [SerializeField] TextAsset submitGuessTxn;
+        [SerializeField] CadenceTransactionAsset loginTxn;
+        [SerializeField] CadenceTransactionAsset getCurrentGameStateTxn;
+        [SerializeField] CadenceScriptAsset checkWordScript;
+        [SerializeField] CadenceTransactionAsset submitGuessTxn;
 
         // Cadence scripts to get the data needed to display the High Scores panel
         [Header("Highscore Scripts")]
-        [SerializeField] TextAsset GetHighScores;
-        [SerializeField] TextAsset GetPlayerCumulativeScore;
-        [SerializeField] TextAsset GetPlayerWinningStreak;
-        [SerializeField] TextAsset GetPlayerMaxWinningStreak;
-        [SerializeField] TextAsset GetGuessDistribution;
+        [SerializeField] CadenceScriptAsset GetHighScores;
+        [SerializeField] CadenceScriptAsset GetPlayerCumulativeScore;
+        [SerializeField] CadenceScriptAsset GetPlayerWinningStreak;
+        [SerializeField] CadenceScriptAsset GetPlayerMaxWinningStreak;
+        [SerializeField] CadenceScriptAsset GetGuessDistribution;
 
         private static FlowInterface m_instance = null;
         public static FlowInterface Instance
@@ -137,12 +140,28 @@ namespace FlowWords
             FlowSDK.GetWalletProvider().Unauthenticate();
         }
 
+        
+        public class StatePayload
+        {
+            public List<GuessResult> currentState;
+        }
+
+        public class TimePayload
+        {
+            public Decimal startTime;
+        }
+
+        public class GuessResultPayload
+        {
+            public string result;
+        }
+        
         /// <summary>
         /// Attempts to get the current game state for the user from chain.
         /// </summary>
         /// <param name="onSuccessCallback">Callback on success</param>
         /// <param name="onFailureCallback">Callback on failure</param>
-        public IEnumerator GetGameDataFromChain(System.Action<double, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
+        public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
         {
             // execute getCurrentGameState transaction on chain
             Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(DoTextSubstitutions(getCurrentGameStateTxn.text));
@@ -160,11 +179,6 @@ namespace FlowWords
                 yield break;
             }
 
-            // transaction success, get data from emitted events
-            double gameStartTime = 0;
-            List<GuessResult> results = new List<GuessResult>();
-            Dictionary<string, string> letterStatuses = new Dictionary<string, string>();
-
             // get events
             List<FlowEvent> events = getStateTask.Result.Events;
             FlowEvent currentStateEvent = events.Find(x => x.Type.EndsWith(".CurrentState"));
@@ -176,23 +190,15 @@ namespace FlowWords
                 yield break;
             }
 
+            // transaction success, get data from emitted events
+            Decimal gameStartTime = 0;
+            Dictionary<string, string> letterStatuses = new Dictionary<string, string>();
+            
             // process current game state event
-            // access event payload
-            CadenceComposite statePayload = currentStateEvent.Payload as CadenceComposite;
-            CadenceBase[] priorGuessResults = statePayload.CompositeFieldAs<CadenceArray>("currentState").Value;
-
-            // iterate over prior guess results in payload, add to results list, and populate letter statuses
-            foreach (CadenceBase result in priorGuessResults)
+            List<GuessResult> results = Convert.FromCadence<StatePayload>(currentStateEvent.Payload).currentState;
+            foreach (GuessResult newResult in results)
             {
-                // add guess result to output
-                GuessResult newResult = new GuessResult
-                {
-                    word = (result as CadenceComposite).CompositeFieldAs<CadenceString>("Guess").Value.ToUpper(),
-                    colorMap = (result as CadenceComposite).CompositeFieldAs<CadenceString>("Result").Value
-                };
-                results.Add(newResult);
-
-                // add letters to lettermap
+                newResult.word = newResult.word.ToUpper();
                 for (int i = 0; i < 5; i++)
                 {
                     bool letterAlreadyExists = letterStatuses.ContainsKey(newResult.word[i].ToString());
@@ -209,22 +215,22 @@ namespace FlowWords
                             {
                                 letterStatuses[newResult.word[i].ToString()] = newResult.colorMap[i].ToString();
                             }
+
                             break;
                         case "n":
                             if (newResult.colorMap[i] == 'p' || newResult.colorMap[i] == 'w')
                             {
                                 letterStatuses[newResult.word[i].ToString()] = newResult.colorMap[i].ToString();
                             }
+
                             break;
                     }
                 }
             }
 
             // get game start time event
-            CadenceComposite timePayload = startTimeEvent.Payload as CadenceComposite;
-            CadenceNumber startTime = timePayload.CompositeFieldAs<CadenceNumber>("startTime");
-            gameStartTime = double.Parse(startTime.Value);
-
+            gameStartTime = Convert.FromCadence<TimePayload>(startTimeEvent.Payload).startTime;
+            
             // call GameManager to set game state
             onSuccessCallback(gameStartTime, results, letterStatuses);
         }
@@ -283,8 +289,7 @@ namespace FlowWords
             FlowEvent ourEvent = submitGuessTask.Result.Events.Find(x => x.Type.EndsWith(".GuessResult"));
             if (ourEvent != null)
             {
-                CadenceComposite payload = ourEvent.Payload as CadenceComposite;
-                wordScore = payload.CompositeFieldAs<CadenceString>("result").Value;
+                wordScore = Convert.FromCadence<GuessResultPayload>(ourEvent.Payload).result;
 
                 // check if we are out of guesses
                 if (wordScore == "OutOfGuesses")
@@ -309,7 +314,7 @@ namespace FlowWords
         /// </summary>
         /// <param name="onSuccessCallback">Callback on success</param>
         /// <param name="onFailureCallback">Callback on failure</param>
-        public IEnumerator LoadHighScoresFromChain(System.Action<List<ScoreStruct>, uint, uint, uint, uint[]> onSuccessCallback, System.Action onFailureCallback)
+        public IEnumerator LoadHighScoresFromChain(System.Action<List<ScoreStruct>, BigInteger, BigInteger, BigInteger, List<BigInteger>> onSuccessCallback, System.Action onFailureCallback)
         {
             string playerWalletAddress = FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address;
 
@@ -344,33 +349,14 @@ namespace FlowWords
             }
 
             // load global highscores
-            CadenceBase[] highscores = (tasks["GetHighScores"].Result.Value as CadenceArray).Value;
-            List<ScoreStruct> GlobalScores = new List<ScoreStruct>();
-            foreach (CadenceComposite score in highscores)
-            {
-                ScoreStruct parsedScore = new ScoreStruct("", 0);
-                foreach (CadenceCompositeField field in score.Value.Fields)
-                {
-                    switch (field.Name)
-                    {
-                        case "Name":
-                            parsedScore.Name = (field.Value as CadenceString).Value;
-                            break;
-                        case "Score":
-                            parsedScore.Score = int.Parse((field.Value as CadenceNumber).Value);
-                            break;
-                    }
-                }
-
-                GlobalScores.Add(parsedScore);
-            }
+            List<ScoreStruct> GlobalScores = Convert.FromCadence<List<ScoreStruct>>(tasks["GetHighScores"].Result.Value);
             GlobalScores = GlobalScores.OrderByDescending(score => score.Score).Take(10).ToList();
 
             // load player scores
-            uint PlayerCumulativeScore = uint.Parse((tasks["GetPlayerCumulativeScore"].Result.Value as CadenceNumber).Value);
-            uint PlayerWinningStreak = uint.Parse((tasks["GetPlayerWinningStreak"].Result.Value as CadenceNumber).Value);
-            uint PlayerMaximumWinningStreak = uint.Parse((tasks["GetPlayerMaxWinningStreak"].Result.Value as CadenceNumber).Value);
-            uint[] PlayerGuessDistribution = (tasks["GetGuessDistribution"].Result.Value as CadenceArray).Value.Select(value => uint.Parse((value as CadenceNumber).Value)).ToArray();
+            BigInteger PlayerCumulativeScore = Convert.FromCadence<BigInteger>(tasks["GetPlayerCumulativeScore"].Result.Value);
+            BigInteger PlayerWinningStreak = Convert.FromCadence<BigInteger>(tasks["GetPlayerWinningStreak"].Result.Value);
+            BigInteger PlayerMaximumWinningStreak = Convert.FromCadence<BigInteger>(tasks["GetPlayerMaxWinningStreak"].Result.Value);
+            List<BigInteger> PlayerGuessDistribution = Convert.FromCadence<List<BigInteger>>(tasks["GetGuessDistribution"].Result.Value);
 
             // callback
             onSuccessCallback(GlobalScores, PlayerCumulativeScore, PlayerWinningStreak, PlayerMaximumWinningStreak, PlayerGuessDistribution);

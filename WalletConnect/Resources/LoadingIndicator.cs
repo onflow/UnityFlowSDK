@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
+    /// <summary>
+    /// Loading Indicator graphic used on dialogs. 
+    /// </summary>
     public class LoadingIndicator : MonoBehaviour
     {
         public float RotationSpeed = 360.0f;
@@ -11,7 +12,6 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
         private float _RotationStepProgress = 0.0f;
 
-        // Update is called once per frame
         void Update()
         {
             _RotationStepProgress += Time.deltaTime * RotationSpeed;

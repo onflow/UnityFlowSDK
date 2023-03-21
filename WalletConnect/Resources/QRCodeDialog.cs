@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using ZXing;
@@ -6,6 +5,9 @@ using ZXing.QrCode;
 
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
+    /// <summary>
+    /// The script which must be added to the QR Code Dialog prefab. 
+    /// </summary>
     public class QRCodeDialog : MonoBehaviour
     {
         [Header("Loading Indicator")]
@@ -30,7 +32,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         }
 
         /// <summary>
-        /// Example: Init(exampleUri.text);
+        /// Generates the QR code. 
         /// </summary>
         /// <param name="uri">The WalletConnect uri to be presented as a QR code.</param>
         public bool Init(string uri)
@@ -82,22 +84,34 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             return encoded;
         }
 
+        /// <summary>
+        /// Callback when Copy Uri button is clicked. 
+        /// </summary>
         public void OnCopyUriClicked()
         {
             UriCopyButtonText.text = "<b>Copied</b>";
             GUIUtility.systemCopyBuffer = _Uri;
         }
 
+        /// <summary>
+        /// Callback when mouse hovers over Copy Uri button. 
+        /// </summary>
         public void OnCopyUriMouseHoverEnter()
         {
             UriCopyButtonText.text = "<b>Copy to Clipboard</b>";
         }
 
+        /// <summary>
+        /// Callback when mouse leaves Copy Uri button. 
+        /// </summary>
         public void OnCopyUriMouseHoverExit()
         {
             UriCopyButtonText.text = "Copy to Clipboard";
         }
 
+        /// <summary>
+        /// Callback when Close button is clicked.
+        /// </summary>
         public void OnCloseButtonClicked()
         {
             Destroy(gameObject);

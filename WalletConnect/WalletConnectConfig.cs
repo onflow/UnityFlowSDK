@@ -1,10 +1,10 @@
 using DapperLabs.Flow.Sdk.Crypto;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
+    /// <summary>
+    /// Configuration for initializing Wallet Connect. 
+    /// </summary>
     public class WalletConnectConfig : WalletConfig
     {
         public string ProjectId;

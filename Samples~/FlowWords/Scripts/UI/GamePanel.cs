@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using TMPro;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace FlowWords
             if (m_countdownTimer != null)
             {
                 DateTime unixTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                unixTime = unixTime.AddSeconds(GameManager.Instance.CurrentGameStartTime).ToLocalTime();
+                unixTime = unixTime.AddSeconds((double)GameManager.Instance.CurrentGameStartTime).ToLocalTime();
 
                 TimeSpan difference = TimeSpan.FromHours(24.0) - (DateTime.Now - unixTime);
                 if (difference.TotalSeconds < 0)

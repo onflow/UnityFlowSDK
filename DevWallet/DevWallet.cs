@@ -37,6 +37,10 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             Debug.LogWarning("WARNING: You are using DevWallet - this is only intended to be used for development purposes on emulator and testnet. DO NOT use this for Production, as it is NOT secure.");
         }
 
+        /// <summary>
+        /// Not used by DevWallet. 
+        /// </summary>
+        /// <param name="config">Ignored.</param>
         void IWallet.Init(WalletConfig config)
         {
 
@@ -224,6 +228,10 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             return signer.Sign(message);
         }
 
+        /// <summary>
+        /// Retrieves the Flow Control Account of the authenticated user. 
+        /// </summary>
+        /// <returns>The Flow Control Account of the authenticated user.</returns>
         SdkAccount IWallet.GetAuthenticatedAccount()
         {
             if (authorizedAccount == null)

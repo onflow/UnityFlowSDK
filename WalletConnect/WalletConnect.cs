@@ -19,13 +19,20 @@ using UnityEngine.Networking;
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
     [RpcMethod("flow_authz"), RpcResponseOptions(Clock.ONE_MINUTE, false, 99999)]
-    public class TxSignRequest : List<string>
+    internal class TxSignRequest : List<string>
     {
-        public TxSignRequest(IEnumerable<string> collection) : base(collection)
+        internal TxSignRequest(IEnumerable<string> collection) : base(collection)
         {
         }
     }
 
+    /// <summary>
+    /// This wallet implementation uses Wallet Connect 2.0 to connect the game with 
+    /// Flow wallets that also support Wallet Connect 2.0. For more information on 
+    /// Wallet Connect 2.0, see https://docs.walletconnect.com/2.0/. 
+    /// For documentation on how to use this provider, see 
+    /// https://developers.flow.com/tools/unity-sdk/guides/wallet-connect
+    /// </summary>
     public class WalletConnectProvider : IWallet
     {
         WalletConnectConfig wcConfig = null;
@@ -36,20 +43,46 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
         GameObject qrDialog = null;
 
+        /// <summary>
+        /// Initializes the Wallet Connect provider. Must be called before calling anything else. 
+        /// </summary>
+        /// <param name="config">Reference to a WalletConnectConfig object containing config for Wallet Connect.</param>
         void IWallet.Init(WalletConfig config)
         {
+            if (config == null)
+            {
+                throw new Exception("Wallet Connect: Init() - must pass a valid WalletConnectConfig object.");
+            }
+
             if (config is WalletConnectConfig)
             {
                 wcConfig = config as WalletConnectConfig;
             }
             else
             {
-                throw new Exception("Incorrect config type passed to WalletConnectProvider.Init(). Config type must be WalletConnectConfig.");
+                throw new Exception("Wallet Connect: Init() - Incorrect config type given. Config type must be WalletConnectConfig.");
             }
         }
 
+        /// <summary>
+        /// Connects the app to the user's wallet, obtaining their Flow address. 
+        /// On desktop builds, a modal containing a QR code will appear, which the user can scan
+        /// with their wallet app. 
+        /// On Mobile builds, a list of supported wallets will appear, which the user can select
+        /// and deep link to. 
+        /// </summary>
+        /// <param name="username">Ignored for Wallet Connect.</param>
+        /// <param name="OnAuthSuccess">Callback for when the user approves the app connection. Their Flow address is passed in as a string.</param>
+        /// <param name="OnAuthFailed">Callback for when the user denied the app connection, or an error occurred.</param>
+        /// <returns>An async Task. This function can be awaited.</returns>
         async Task IWallet.Authenticate(string username, Action<string> OnAuthSuccess, Action OnAuthFailed)
         {
+            if (wcConfig == null)
+            {
+                Debug.LogError("Wallet Connect: Trying to call Authenticate - call Init() first!");
+                return;
+            }
+
 #if UNITY_ANDROID || UNITY_IOS
             // Try to use user defined Wallet Selection prefab
             UnityEngine.Object prefab = wcConfig.WalletSelectDialogPrefab as UnityEngine.Object;
@@ -240,8 +273,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             // If Dapper SC is installed, include it
             int numProviders = installedApps[1] ? 2 : 1;
 
-            WalletSelectDialog.WalletProvider[] wcProviders = new WalletSelectDialog.WalletProvider[numProviders];
-            wcProviders[0] = new WalletSelectDialog.WalletProvider
+            WalletSelectDialog.WalletProviderData[] wcProviders = new WalletSelectDialog.WalletProviderData[numProviders];
+            wcProviders[0] = new WalletSelectDialog.WalletProviderData
             {
                 Name = "Lilico",
                 IsInstalled = installedApps[0],
@@ -251,7 +284,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
             if (installedApps[1])
             {
-                wcProviders[1] = new WalletSelectDialog.WalletProvider
+                wcProviders[1] = new WalletSelectDialog.WalletProviderData
                 {
                     Name = "Dapper SC",
                     IsInstalled = installedApps[1],
@@ -301,6 +334,10 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             OnAuthSuccess(account);
         }
 
+        /// <summary>
+        /// Retrieves the account associated with the connected Wallet Connect session.
+        /// </summary>
+        /// <returns>An SdkAccount object containing the authenticated Flow address, or null if there's no auth.</returns>
         SdkAccount IWallet.GetAuthenticatedAccount()
         {
             if (_session.Acknowledged != null && (bool)_session.Acknowledged)
@@ -317,6 +354,10 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             return null;
         }
 
+        /// <summary>
+        /// Checks if the user is authenticated with Wallet Connect. 
+        /// </summary>
+        /// <returns>True if the user is authenticated.</returns>
         bool IWallet.IsAuthenticated()
         {
             if (_session.Acknowledged != null)
@@ -326,8 +367,26 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             return false;
         }
 
+        /// <summary>
+        /// Requests Wallet Connect to sign a transaction envelope. The request will appear in
+        /// the user's connected wallet. 
+        /// </summary>
+        /// <param name="txn">The transaction to be signed.</param>
+        /// <returns>The signature in bytes.</returns>
         async Task<byte[]> IWallet.SignTransactionEnvelope(FlowTransaction txn)
         {
+            if (wcConfig == null)
+            {
+                Debug.LogError("Wallet Connect: Trying to call SignTransactionEnvelope - call Init() first!");
+                return null;
+            }
+
+            if (FlowSDK.GetWalletProvider().IsAuthenticated() == false)
+            {
+                Debug.LogError("Wallet Connect: Trying to call SignTransactionEnvelope, but no user is authenticated - call Authenticate() first!");
+                return null;
+            }
+
             byte[] canonicalAuthorizationEnvelope = Rlp.EncodedCanonicalAuthorizationEnvelope(txn);
             byte[] message = DomainTag.AddTransactionDomainTag(canonicalAuthorizationEnvelope);
 
@@ -354,12 +413,20 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             throw new Exception("WalletConnect: sign transaction response does not contain a signature.");
         }
 
+        /// <summary>
+        /// Not yet implemented - stubbed for future use. 
+        /// </summary>
+        /// <param name="txn">The transaction to be signed.</param>
+        /// <returns>The signature in bytes.</returns>
         Task<byte[]> IWallet.SignTransactionPayload(FlowTransaction txn)
         {
             throw new NotImplementedException("Wallet Connect Provider currently only supports a single signer (ie proposer, authorizer and payer), and therefore " +
                 "must sign the envelope. Only use SignTransactionEnvelope until multi-signing has been implemented in a future version of this provider.");
         }
 
+        /// <summary>
+        /// Disconnects the app from Wallet Connect and the user's wallet. 
+        /// </summary>
         void IWallet.Unauthenticate()
         {
             if (_session.Acknowledged != null && (bool)_session.Acknowledged)

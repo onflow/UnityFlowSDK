@@ -10,6 +10,10 @@ namespace DapperLabs.Flow.Sdk.Crypto
     /// </summary>
     public interface IWallet
     {
+        /// <summary>
+        /// Initializes the wallet provider. Should be called before calling anything else. 
+        /// </summary>
+        /// <param name="config">A reference to a derived WalletConfig object containing config data.</param>
         public void Init(WalletConfig config);
 
         /// <summary>
@@ -53,6 +57,11 @@ namespace DapperLabs.Flow.Sdk.Crypto
         public SdkAccount GetAuthenticatedAccount();
     }
 
+    /// <summary>
+    /// Abstract base class for IWallet configuration. Inherit from this for a 
+    /// specific IWallet implementation if needed, adding whatever config data is needed
+    /// for that implementation. 
+    /// </summary>
     public abstract class WalletConfig
     {
 

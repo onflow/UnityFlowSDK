@@ -21061,7 +21061,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1326901462}
   m_HandleRect: {fileID: 1326901461}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -30443,7 +30443,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 359367597}
   m_HandleRect: {fileID: 359367596}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -31906,7 +31906,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1189795090}
   m_HandleRect: {fileID: 1189795089}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -32700,7 +32700,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1855742257}
   m_HandleRect: {fileID: 1855742256}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -35324,7 +35324,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1534275775}
   m_HandleRect: {fileID: 1534275774}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -39440,9 +39440,9 @@ MonoBehaviour:
   ScriptsArg2: {fileID: 683914376}
   ScriptsAddressArg: {fileID: 1183438834}
   ScriptsPrintNftsAddrArg: {fileID: 470048829}
-  CadenceGetTokensScript: {fileID: 2811297602134710623, guid: c84e54d0d1da0014f89a45a42113c67f, type: 3}
-  CadencePrintNftsScript: {fileID: 2811297602134710623, guid: 05854e907106cce4eb296a3cd5da6141, type: 3}
-  CadenceGetNftsForSaleScript: {fileID: 2811297602134710623, guid: 06f6b00d3208da64eaae27db08f0dd99, type: 3}
+  CadenceGetTokensScript: {fileID: 3232733424486734734, guid: c84e54d0d1da0014f89a45a42113c67f, type: 3}
+  CadencePrintNftsScript: {fileID: 3232733424486734734, guid: 05854e907106cce4eb296a3cd5da6141, type: 3}
+  CadenceGetNftsForSaleScript: {fileID: 3232733424486734734, guid: 06f6b00d3208da64eaae27db08f0dd99, type: 3}
   ScriptsResult: {fileID: 1804941661}
   TxSignedInAccount: {fileID: 1655009538}
   TxSignInBtn: {fileID: 31587600}
@@ -39451,7 +39451,7 @@ MonoBehaviour:
   TxArgsNftId: {fileID: 340614283}
   TxArgsNftPrice: {fileID: 1192305801}
   TxIdInput: {fileID: 121758697}
-  CadenceListNftScript: {fileID: 2811297602134710623, guid: fddf3e005ccfa6648b966303cfd19309, type: 3}
+  CadenceListNftScript: {fileID: 3232733424486734734, guid: fddf3e005ccfa6648b966303cfd19309, type: 3}
   TxSubmitButton1: {fileID: 242070488}
   TxSubmitButton2: {fileID: 2086965746}
   TxSubmitButton3: {fileID: 41086886}

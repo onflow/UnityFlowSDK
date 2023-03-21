@@ -428,6 +428,9 @@ namespace DapperLabs.Flow.Sdk.Unity
             {
                 di.Delete(true);
             }
+            
+            //Delete .meta file if it exists
+            File.Delete(Data.EmulatorSettings.emulatorDataDirectory + "/flowdb.meta");
         }
 
         private void OnDisable()

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DapperLabs.Flow.Sdk.Cadence;
 using UnityEngine;
 
 namespace FlowWordsTutorial
@@ -8,6 +9,7 @@ namespace FlowWordsTutorial
         /// <summary>
         /// the guess that was submitted
         /// </summary>
+        [Cadence(CadenceType = "String", Name = "Guess")]
         public string word;
 
         /// <summary>
@@ -18,6 +20,7 @@ namespace FlowWordsTutorial
         /// "w" = the letter at this position was in the (w)ord, but in the incorrect position, color the cell yellow.
         /// "n" = the letter at this position was (n)ot in the word.
         /// </remarks>
+        [Cadence(CadenceType = "String", Name = "Result")]
         public string colorMap;
     }
 
@@ -118,10 +121,10 @@ namespace FlowWordsTutorial
         /// <param name="gameStartTime">The time this game was started</param>
         /// <param name="guessResults">The current list of results for this game</param>
         /// <param name="letterStatuses">A dictionary mapping keys to statuses (colors)</param>
-        private void OnNewGameSuccess(double gameStartTime, List<GuessResult> guessResults, Dictionary<string, string> letterStatuses)
+        private void OnNewGameSuccess(decimal gameStartTime, List<GuessResult> guessResults, Dictionary<string, string> letterStatuses)
         {
             // set game status
-            m_currentGameStartTimeUnix = gameStartTime;
+            m_currentGameStartTimeUnix = decimal.ToDouble(gameStartTime);
             m_guessResults = guessResults;
             m_letterStatuses = letterStatuses;
 

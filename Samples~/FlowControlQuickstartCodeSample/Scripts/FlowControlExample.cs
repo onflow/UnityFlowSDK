@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.Cadence;
@@ -8,11 +10,18 @@ using DapperLabs.Flow.Sdk.DevWallet;
 using DapperLabs.Flow.Sdk.Unity;
 using UnityEngine;
 using UnityEngine.UI;
+using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
 
 namespace QuickstartGuide
 {
     public class FlowControlExample : MonoBehaviour
     {
+        public class TestEvent
+        {
+            public String field;
+        }
+        
+
         public Text outputText;
         //Make Start a coroutine so we don't lock up the editor while this is running.
         private IEnumerator Start()
@@ -60,7 +69,7 @@ namespace QuickstartGuide
             }";
 
             //Execute the script
-            Task<FlowScriptResponse> task = scriptOnlyAccount.ExecuteScript(code, new CadenceString("Test"));
+            Task<FlowScriptResponse> task = scriptOnlyAccount.ExecuteScript(code, Convert.ToCadence("Test", "String"));
 
             //Wait until it has been executed.
             yield return new WaitUntil(() => task.IsCompleted);
@@ -73,8 +82,8 @@ namespace QuickstartGuide
             }
 
             //Output the result, casting the returned value to a CadenceNumber.
-            Debug.Log($"Script result: {task.Result.Value.As<CadenceNumber>().Value}");
-            outputText.text += $"Result:  {task.Result.Value.As<CadenceNumber>().Value}\n\n";
+            Debug.Log($"Script result: {Convert.FromCadence<BigInteger>(task.Result.Value)}");
+            outputText.text += $"Result:  {Convert.FromCadence<BigInteger>(task.Result.Value)}\n\n";
 
             #endregion
 
@@ -196,7 +205,7 @@ namespace QuickstartGuide
                 transaction {
                     prepare(acct: AuthAccount) {
                         log(""Transaction Test"")
-                        HelloWorld.hello(data:""Test Event"")
+                        HelloWorld.hello(data:""Test Event Payload"")
                     }
                 }";
 
@@ -217,8 +226,8 @@ namespace QuickstartGuide
             //Show that the transaction finished and display the value of the event that was emitted during execution.
             //The Payload of the returned FlowEvent will be a CadenceComposite.  We want the value associated with the
             //"field" field as a string
-            Debug.Log($"Executed transaction.  Event type: {txEvent.Type}.  Event payload: {txEvent.Payload.As<CadenceComposite>().CompositeFieldAs<CadenceString>("field").Value}");
-            outputText.text += $"Done.  Event contents:  {txEvent.Payload.As<CadenceComposite>().CompositeFieldAs<CadenceString>("field").Value}\n\n";
+            Debug.Log($"Executed transaction.  Event type: {txEvent.Type}.  Event payload: {Convert.FromCadence<TestEvent>(txEvent.Payload).field}");
+            outputText.text += $"Done.  Event contents:  {Convert.FromCadence<TestEvent>(txEvent.Payload).field}\n\n";
             #endregion
             outputText.text += "Demo complete";
             Debug.Log("Demo complete");

@@ -9,6 +9,6 @@ namespace DapperLabs.Flow.Sdk.DataObjects
         public ulong BlockHeight;
         public List<FlowEvent> Events;
         public DateTimeOffset BlockTimestamp;
-		public Exceptions.FlowError Error;
+        public Exceptions.FlowError Error;
     }
 }

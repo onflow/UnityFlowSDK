@@ -5,300 +5,300 @@ using Newtonsoft.Json;
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
     [Serializable]
-    public class TxSignRequestParamRole
+    internal class TxSignRequestParamRole
     {
         [JsonProperty("proposer")]
-        public bool Proposer;
+        internal bool Proposer;
 
         [JsonProperty("authorizer")]
-        public bool Authorizer;
+        internal bool Authorizer;
 
         [JsonProperty("payer")]
-        public bool Payer;
+        internal bool Payer;
 
         [JsonProperty("param")]
-        public bool Param;
+        internal bool Param;
     }
 
     [Serializable]
-    public class TxSignRequestParamAccount
+    internal class TxSignRequestParamAccount
     {
         [JsonProperty("kind")]
-        public string Kind;
+        internal string Kind;
 
         [JsonProperty("tempId")]
-        public string TempId;
+        internal string TempId;
 
         [JsonProperty("addr")]
-        public string Addr;
+        internal string Addr;
 
         [JsonProperty("keyId")]
-        public int KeyId;
+        internal int KeyId;
 
         [JsonProperty("sequenceNum")]
-        public int SequenceNum;
+        internal int SequenceNum;
 
         [JsonProperty("signature")]
-        public string Signature;
+        internal string Signature;
 
         [JsonProperty("resolve")]
-        public string Resolve;
+        internal string Resolve;
 
         [JsonProperty("role")]
-        public TxSignRequestParamRole Role;
+        internal TxSignRequestParamRole Role;
     }
 
     [Serializable]
-    public class TxSignRequestParamArgument
+    internal class TxSignRequestParamArgument
     {
         [JsonProperty("kind")]
-        public string Kind;
+        internal string Kind;
 
         [JsonProperty("tempId")]
-        public string TempId;
+        internal string TempId;
 
         [JsonProperty("value")]
-        public string Value;
+        internal string Value;
 
         [JsonProperty("asArgument")]
-        public object AsArgument;
+        internal object AsArgument;
 
         [JsonProperty("xform")]
-        public TxSignRequestParamXform Xform;
+        internal TxSignRequestParamXform Xform;
     }
 
     [Serializable]
-    public class TxSignRequestParamMessage
+    internal class TxSignRequestParamMessage
     {
         [JsonProperty("cadence")]
-        public string Cadence;
+        internal string Cadence;
 
         [JsonProperty("refBlock")]
-        public string RefBlock;
+        internal string RefBlock;
 
         [JsonProperty("computeLimit")]
-        public int ComputeLimit;
+        internal int ComputeLimit;
 
         [JsonProperty("proposer")]
-        public string Proposer;
+        internal string Proposer;
 
         [JsonProperty("payer")]
-        public string Payer;
+        internal string Payer;
 
         [JsonProperty("authorizations")]
-        public string[] Authorizations;
+        internal string[] Authorizations;
 
         [JsonProperty("params")]
-        public string[] Params;
+        internal string[] Params;
 
         [JsonProperty("arguments")]
-        public string[] Arguments;
+        internal string[] Arguments;
     }
 
     [Serializable]
-    public class TxSignRequestParamEvent
+    internal class TxSignRequestParamEvent
     {
         [JsonProperty("eventType")]
-        public string EventType;
+        internal string EventType;
 
         [JsonProperty("start")]
-        public string Start;
+        internal string Start;
 
         [JsonProperty("end")]
-        public string End;
+        internal string End;
 
         [JsonProperty("blockIds")]
-        public string[] BlockIds;
+        internal string[] BlockIds;
     }
 
     [Serializable]
-    public class TxSignRequestParamTransaction
+    internal class TxSignRequestParamTransaction
     {
         [JsonProperty("id")]
-        public string Id;
+        internal string Id;
     }
 
     [Serializable]
-    public class TxSignRequestParamBlock
+    internal class TxSignRequestParamBlock
     {
         [JsonProperty("id")]
-        public string Id;
+        internal string Id;
 
         [JsonProperty("height")]
-        public string Height;
+        internal string Height;
 
         [JsonProperty("isSealed")]
-        public string IsSealed;
+        internal string IsSealed;
     }
 
     [Serializable]
-    public class TxSignRequestParamCollection
+    internal class TxSignRequestParamCollection
     {
         [JsonProperty("id")]
-        public string Id;
+        internal string Id;
     }
 
     [Serializable]
-    public class TxSignRequestParamProposalKey
+    internal class TxSignRequestParamProposalKey
     {
         [JsonProperty("address")]
-        public string Address;
+        internal string Address;
 
         [JsonProperty("keyId")]
-        public int KeyId;
+        internal int KeyId;
 
         [JsonProperty("sequenceNum")]
-        public int SequenceNum;
+        internal int SequenceNum;
     }
 
     [Serializable]
-    public class TxSignRequestParamSignature
+    internal class TxSignRequestParamSignature
     {
         [JsonProperty("address")]
-        public string Address;
+        internal string Address;
 
         [JsonProperty("keyId")]
-        public int KeyId;
+        internal int KeyId;
 
         [JsonProperty("sig")]
-        public string Sig;
+        internal string Sig;
     }
 
     [Serializable]
-    public class TxSignRequestParamXform
+    internal class TxSignRequestParamXform
     {
         [JsonProperty("label")]
-        public string Label;
+        internal string Label;
     }
 
     [Serializable]
-    public class TxSignRequestParamInteraction
+    internal class TxSignRequestParamInteraction
     {
         [JsonProperty("tag")]
-        public string Tag;
+        internal string Tag;
 
         [JsonProperty("assigns")]
-        public Dictionary<string, string> Assigns;
+        internal Dictionary<string, string> Assigns;
 
         [JsonProperty("status")]
-        public string Status;
+        internal string Status;
 
         [JsonProperty("reason")]
-        public string Reason;
+        internal string Reason;
 
         [JsonProperty("accounts")]
-        public Dictionary<string, TxSignRequestParamAccount> Accounts;
+        internal Dictionary<string, TxSignRequestParamAccount> Accounts;
 
         [JsonProperty("params")]
-        public Dictionary<string, string> Params;
+        internal Dictionary<string, string> Params;
 
         [JsonProperty("arguments")]
-        public Dictionary<string, TxSignRequestParamArgument> Arguments;
+        internal Dictionary<string, TxSignRequestParamArgument> Arguments;
 
         [JsonProperty("message")]
-        public TxSignRequestParamMessage Message;
+        internal TxSignRequestParamMessage Message;
 
         [JsonProperty("proposer")]
-        public string Proposer;
+        internal string Proposer;
 
         [JsonProperty("authorizations")]
-        public string[] Authorizations;
+        internal string[] Authorizations;
 
         [JsonProperty("payer")]
-        public string[] Payer;
+        internal string[] Payer;
 
         [JsonProperty("events")]
-        public TxSignRequestParamEvent Events;
+        internal TxSignRequestParamEvent Events;
 
         [JsonProperty("transaction")]
-        public TxSignRequestParamTransaction Transaction;
+        internal TxSignRequestParamTransaction Transaction;
 
         [JsonProperty("block")]
-        public TxSignRequestParamBlock Block;
+        internal TxSignRequestParamBlock Block;
 
         [JsonProperty("account")]
-        public TxSignRequestParamAccount Account;
+        internal TxSignRequestParamAccount Account;
 
         [JsonProperty("collection")]
-        public TxSignRequestParamCollection Collection;
+        internal TxSignRequestParamCollection Collection;
     }
 
     [Serializable]
-    public class TxSignRequestParamVoucher
+    internal class TxSignRequestParamVoucher
     {
         [JsonProperty("cadence")]
-        public string Cadence;
+        internal string Cadence;
 
         [JsonProperty("refBlock")]
-        public string RefBlock;
+        internal string RefBlock;
 
         [JsonProperty("computeLimit")]
-        public int ComputeLimit;
+        internal int ComputeLimit;
 
         [JsonProperty("arguments")]
-        public object[] Arguments;
+        internal object[] Arguments;
 
         [JsonProperty("proposalKey")]
-        public TxSignRequestParamProposalKey ProposalKey;
+        internal TxSignRequestParamProposalKey ProposalKey;
 
         [JsonProperty("payer")]
-        public string Payer;
+        internal string Payer;
 
         [JsonProperty("authorizers")]
-        public string[] Authorizers;
+        internal string[] Authorizers;
 
         [JsonProperty("payloadSigs")]
-        public TxSignRequestParamSignature[] PayloadSigs;
+        internal TxSignRequestParamSignature[] PayloadSigs;
 
         [JsonProperty("envelopeSigs")]
-        public TxSignRequestParamSignature[] EnvelopeSigs;
+        internal TxSignRequestParamSignature[] EnvelopeSigs;
     }
 
     [Serializable]
-    public class TxSignRequestParams
+    internal class TxSignRequestParams
     {
         [JsonProperty("f_type")]
-        public string FType;
+        internal string FType;
 
         [JsonProperty("f_vsn")]
-        public string FVsn;
+        internal string FVsn;
 
         [JsonProperty("message")]
-        public string Message;
+        internal string Message;
 
         [JsonProperty("addr")]
-        public string Addr;
+        internal string Addr;
 
         [JsonProperty("keyId")]
-        public int KeyId;
+        internal int KeyId;
 
         [JsonProperty("roles")]
-        public TxSignRequestParamRole Roles;
+        internal TxSignRequestParamRole Roles;
 
         [JsonProperty("cadence")]
-        public string Cadence;
+        internal string Cadence;
 
         [JsonProperty("args")]
-        public object[] Args;
+        internal object[] Args;
 
         [JsonProperty("interaction")]
-        public TxSignRequestParamInteraction Interaction;
+        internal TxSignRequestParamInteraction Interaction;
 
         [JsonProperty("voucher")]
-        public TxSignRequestParamVoucher Voucher;
+        internal TxSignRequestParamVoucher Voucher;
 
         [JsonProperty("address")]
-        public string Address;
+        internal string Address;
     }
 
-    public class TxSignResponseData
+    internal class TxSignResponseData
     {
         public string addr;
         public string keyId;
         public string signature;
     }
 
-    public class TxSignResponse
+    internal class TxSignResponse
     {
         public TxSignResponseData data;
         public string status;

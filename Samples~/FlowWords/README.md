@@ -1,25 +1,30 @@
 # Flow Unity SDK - FlowWords Sample
 
-This sample requires some initial set-up, in order to get the emulator into a suitable state to run the game.
+This sample is a working pre-deployed version of our FlowWords tutorial sample, running on FLOW Testnet.\
+To use this sample you will need a WalletConnect compatible Testnet wallet. e.g. Lilico.
+
+If you do not already have a compatible wallet, you can sign up for one here: [https://lilico.app](https://lilico.app)\
+You will need to install the mobile phone app. (iOS or Android)
+
+Once installed, you will need to enable dev mode in the Lilico app, do so as follows;
+1. Go to the settings menu, by clicking the profile icon on the bottom right corner of the screen.
+2. Select Developer Mode to enter the Developer mode submenu
+
+    ![Lilico Settings](../media/Lilico_Settings.jpg)
+
+3. Enable Developer Mode with the toggle at the top of the screen, and then set the network to TestNet.
+
+    ![Lilico Enable Devmode](../media/Lilico_TestnetEnable.jpg)
+
+4. Back out to the wallet dashboard by clicking the back button at the top left of the screen, then clicking the Dashboard button (small $) in the bottom left corner of the screen.
+5. At this point your wallet should say TESTNET at the top of the screen. If your FLOW balance is zero, you can fund your Testnet account via the FLOW Testnet Faucet here: [https://testnet-faucet.onflow.org/fund-account](https://testnet-faucet.onflow.org/fund-account)
+    1. Enter your Testnet account address, as shown in the Lilico app
+    2. Complete the captcha, and click 'Fund Your Account'
+    3. Refresh your Lilico app on your device to see your new FLOW balance! (swipe down on the dashboard screen)
 
 We assume you have already added the SDK package to your Unity project, and Imported the FlowWords Sample using the Unity Package Manager.
 If you have not already done so, do this now.
 
 1. Open Game.scene from the FlowWords sample folder. (Samples\Flow SDK\\\<version>\Flow Words\Scenes)
-2. In the scene Heirarchy, Select the 'Flow Control' gameobject.
-3. In the inspector for the Flow Control gameobject, Click the 'Open Flow Control Window' button.
-4. On the Emulator Settings tab, click the ellipsis beside the Emulator Data Directory field, and navigate to: Assets\Samples\Flow SDK\\\<version>\Flow Words\Resources
-5. The Start Emulator button should now be available. Click this button to Start the Emulator. (if this is not the case, please check that the emulator data directory is pointing to the sample's resources directory, where the flow.json file resides.)
-
->**FOR Windows:**
->
->6. In the project window, navigate to Assets\Samples\Flow SDK\\\<version>\Flow Words\Resources. Right click on emulator_test_data.bat, and click Show in Explorer.
->7. Double Click emulator_test_data.bat from the Explorer window to run. This will create some default user accounts and deploy the game contract.
-
->**FOR Mac:**
->
->6. In the project window, navigate to Assets\Samples\Flow SDK\\\<version>\Flow Words\Resources. Right click on emulator_test_data.command, and click Show in Finder.
->7. Double Click emulator_test_data.command from the Finder window to run. This will create some default user accounts and deploy the game contract.
-
-
-8. You may now press Play in Unity to run the game sample.
+2. Press Play in Unity to run the game sample.
+3. Whenever the game presents you with a QR code, scan the code with your mobile Wallet App, and approve the transactions on your mobile device!

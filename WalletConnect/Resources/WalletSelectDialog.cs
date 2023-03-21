@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
+    /// <summary>
+    /// The script which must be added to the Wallet Select Dialog prefab. 
+    /// </summary>
     public class WalletSelectDialog : MonoBehaviour
     {
         [Header("Loading Indicator")]
@@ -46,11 +49,12 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         }
 
         /// <example>
-        /// Example: Init("Select your wallet", providers);
+        /// Generates the list of wallet providers. 
         /// </example>
         /// <param name="header">Header for the dialog.</param>
         /// <param name="providers">Array of WalletSelectDialog.WalletProviders to present to the user.</param>
-        public bool Init(string header, WalletProvider[] providers, Action<string> OnSelectedWallet)
+        /// <param name="OnSelectedWallet">Callback to call when user selects a wallet provider.</param>
+        public bool Init(string header, WalletProviderData[] providers, Action<string> OnSelectedWallet)
         {
             if (WalletSelectProviderPrefab == null)
             {
@@ -78,17 +82,19 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         }
 
         /// <summary>
-        /// WalletProvider class. Defines visual elements and 
+        /// Data to construct a Wallet Provider. 
         /// </summary>
-        public class WalletProvider
+        public struct WalletProviderData
         {
             public string Name;
             public Texture2D Icon;
             public bool IsInstalled;
             public string Uri;
-            public Action<WalletProvider> OnSelectedCallback;
         }
 
+        /// <summary>
+        /// Callback for when the Close button is pressed. 
+        /// </summary>
         public void OnCloseButtonClicked()
         {
             Destroy(gameObject);

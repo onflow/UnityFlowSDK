@@ -12,7 +12,6 @@ using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Unity;
 using DapperLabs.Flow.Sdk.WalletConnect;
 using DapperLabs.Flow.Sdk.DevWallet;
-using DapperLabs.Flow.Sdk.Crypto;
 
 namespace FlowSDKDemo
 {
@@ -67,9 +66,9 @@ namespace FlowSDKDemo
         public GameObject ScriptsArg2;
         public GameObject ScriptsAddressArg;
         public GameObject ScriptsPrintNftsAddrArg;
-        public TextAsset CadenceGetTokensScript;
-        public TextAsset CadencePrintNftsScript;
-        public TextAsset CadenceGetNftsForSaleScript;
+        public CadenceScriptAsset CadenceGetTokensScript;
+        public CadenceScriptAsset CadencePrintNftsScript;
+        public CadenceScriptAsset CadenceGetNftsForSaleScript;
 
         // Script results
         public GameObject ScriptsResult;
@@ -83,7 +82,7 @@ namespace FlowSDKDemo
         public GameObject TxArgsNftId;
         public GameObject TxArgsNftPrice;
         public GameObject TxIdInput;
-        public TextAsset CadenceListNftScript;
+        public CadenceTransactionAsset CadenceListNftScript;
         public GameObject TxSubmitButton1;
         public GameObject TxSubmitButton2;
         public GameObject TxSubmitButton3;

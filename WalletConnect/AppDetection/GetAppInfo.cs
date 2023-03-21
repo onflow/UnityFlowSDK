@@ -28,15 +28,15 @@ using System.Runtime.InteropServices;
 
 namespace DapperLabs.Flow.Sdk.WalletConnect
 {
-    public class GetAppInfo
+    internal class GetAppInfo
     {
 
-        public GetAppInfo()
+        internal GetAppInfo()
         {
             Initilized();
         }
 
-        public bool CheckInstalledApp(string APPID)
+        internal bool CheckInstalledApp(string APPID)
         {
             return CheckApps(APPID);
         }
@@ -55,7 +55,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             InitilizeAppCheck();
         }
 
-        public bool CheckApps(string APP)
+        internal bool CheckApps(string APP)
         {
             bool check = CheckApp(APP);
             return check;
@@ -83,7 +83,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 		    }
 	    }
 
-	    public bool CheckApps(string APP)
+	    internal bool CheckApps(string APP)
 	    {
             if (GetApps == null)
                 Initilized();
