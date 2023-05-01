@@ -95,7 +95,7 @@ namespace FlowWordsTutorial
         {
             UIManager.Instance.SetStatus("Login Success - Getting game state");
 
-            NewGame();
+            NewGame(username);
         }
 
         /// <summary>
@@ -110,9 +110,9 @@ namespace FlowWordsTutorial
         /// <summary>
         /// Starts a coroutine that initializes a new game from data on chain.
         /// </summary>
-        public void NewGame()
+        public void NewGame(string username)
         {
-            StartCoroutine(FlowInterface.Instance.GetGameDataFromChain(OnNewGameSuccess, OnNewGameFailure));
+            StartCoroutine(FlowInterface.Instance.GetGameDataFromChain(username, OnNewGameSuccess, OnNewGameFailure));
         }
 
         /// <summary>

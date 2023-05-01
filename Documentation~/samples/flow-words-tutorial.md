@@ -180,10 +180,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 using UnityEngine;
 using DapperLabs.Flow.Sdk;
+using DapperLabs.Flow.Sdk.Unity;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.DataObjects;
 using DapperLabs.Flow.Sdk.DevWallet;
-using DapperLabs.Flow.Sdk.Unity;
 using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
 ```
 
@@ -254,7 +254,7 @@ First, we have to invoke the wallet provider to authenticate the user and get th
 // Authenticate an account with DevWallet
 FlowSDK.GetWalletProvider().Authenticate(
     "", // blank string will show list of accounts from Accounts tab of Flow Control Window
-    (string flowAddress) => StartCoroutine(OnAuthSuccess(username, flowAddress, onSuccessCallback, onFailureCallback)), 
+    (string address) => onSuccessCallback(address, username), 
     onFailureCallback);
 ```
 
@@ -276,170 +276,19 @@ Your completed Login function should look as follows;
 public void Login(string username, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
 {
     // Authenticate an account with DevWallet
-    FlowSDK.GetWalletProvider().Authenticate(
-        "", // blank string will show list of accounts from Accounts tab of Flow Control Window
-        (string flowAddress) => StartCoroutine(OnAuthSuccess(username, flowAddress, onSuccessCallback, onFailureCallback)), 
-        onFailureCallback);
+    if (FlowSDK.GetWalletProvider().IsAuthenticated() == false)
+    {
+        FlowSDK.GetWalletProvider().Authenticate(
+            "", // blank string will show list of accounts from Accounts tab of Flow Control Window
+            (string address) => onSuccessCallback(address, username),
+            onFailureCallback);
+    }
 }
+
 ```
-Now we need to implement the `OnAuthSuccess` function for when we successfully authenticate our user and get their flow address. 
-
-```csharp
-/// <summary>
-/// Success callback for Wallet Provider's Authenticate method. 
-/// </summary>
-/// <param name="username">The name that the user has provided (for leaderboard)</param>
-/// <param name="flowAddress">The address of the authenticated Flow Account</param>
-/// <param name="onSuccessCallback">Game callback for successful login</param>
-/// <param name="onFailureCallback">Game callback for failed login</param>
-/// <returns></returns>
-private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
-{
-    // get FLOW account - we are only going to use this for text replacements
-
-    // execute log in transaction on chain
-
-    // check for error. if there was an error, break.
-
-    // login successful!
-
-    yield return null;
-}
-```
-
+Now we need to implement the `GetGameDataFromChain` function for when we successfully authenticate our user and get their flow address.\
 At this point we have successfully authenticated our user, and all subsequent Scripts and Transactions will be submitted via the authenticated account.
 
-As you will recall, we previously configured a number of text replacements.\
-These are useful, and allow us to easily change some hardcoded data from a contract or transaction, such as the deploy address of the contract, from one central location without having to edit every cadence script in our project.\
-Our transactions and scripts will need to access the text replacement function, which lives in the FlowControl.Account class, so we need to first create a FlowControl.Account object as follows;
-
-```cs
-// get FLOW account - we are only going to use this for text replacements
-FLOW_ACCOUNT = new FlowControl.Account
-{
-    GatewayName = "Emulator",   // the network to match
-    AccountConfig = new Dictionary<string, string> { { "Address", FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address } } // the account address to match
-};
-```
-
-Now that we have an Account object for text replacement, we can use it with the Transactions class to Submit our login.cdc transaction.  
-Add the following code beneath the Flow Account object creation code;
-
-```cs
-// execute log in transaction on chain
-Task<FlowTransactionResult> task = Transactions.SubmitAndWaitUntilSealed(FLOW_ACCOUNT.DoTextReplacements(loginTxn.text), new CadenceString(username));
-
-while (!task.IsCompleted)
-{
-    int dots = ((int)(Time.time * 2.0f) % 4);
-    UIManager.Instance.SetStatus("Connecting" + new string('.', dots));
-    yield return null;
-}
-
-```
-
-Because transactions can take quite some time on chain, we create an asynchronous Task by calling SubmitAndWaitUntilSealed from the Transactions class, to prevent blocking the main game thread.  
-Into SubmitAndWaitUntilSealed, we pass the script that we want to execute, and any parameters.
-
-For our script, we refer to the serialized TextAsset field, loginTxn, to which we will assign login.cdc in the inspector.  
-We pass our script into SubmitAndWaitUntilSealed via the DoTextReplacements function on our FLOW_ACCOUNT object, which will parse the cadence script and replace any of our defined text replacements.
-
-For parameters, the login.cdc script is expecting a single String parameter with the player’s display name in it. We pass in a new CadenceString object, which we create inline from the encapsulating function’s username string parameter.
-
-Next, we simply wait until our asynchronous task.IsCompleted.  
-While we wait, we update the UI with a simple animated ‘Connecting…’ text status, and yield to the Unity engine to prevent blocking the thread.
-
-Once our transaction has completed, we want to check if it was successful on chain. Add the following code beneath the transaction submission code;
-
-```cs
-// check for error. if there was an error, break.
-if (task.Result.Error != null || task.Result.ErrorMessage != string.Empty || task.Result.Status == FlowTransactionStatus.EXPIRED)
-{
-    onFailureCallback();
-    yield break;
-}
-```
-
-Here we must check the transaction Result for three conditions:
-
--   Error: Was there an error submitting the transaction to the blockchain?
--   ErrorMessage: Was there an error during processing on the blockchain?
--   Status: A status of EXPIRED means that the transaction did not execute on time and was discarded.
-
-Any error here, and we are simply going to fail the login, and call our onFailureCallback.
-
-Next, we process the result of our transaction.  
-In this case, if there was no error, then we have achieved our goals.  
-We have verified that the user owns the account, by virtue of them successfully signing a transaction, and we have, during the course of that transaction, created game related resources where required.
-
-Add the following code to the bottom of the login function to call the onSuccess callback.
-
-```cs
-// login successful!
-onSuccessCallback(username, flowAddress);
-```
-
-You may also remove the final `yield return null` if you wish.
-
-Your entire OnAuthSuccess function should now look as follows;
-
-```csharp
-private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
-{
-    // get FLOW account - we are only going to use this for text replacements
-    FLOW_ACCOUNT = new FlowControl.Account
-    {
-        GatewayName = "Emulator",   // the network to match
-        AccountConfig = new Dictionary<string, string> { { "Address", FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address } } // the account address to match
-    };
-    
-    // execute log in transaction on chain
-    Task<FlowTransactionResult> task = Transactions.SubmitAndWaitUntilSealed(FLOW_ACCOUNT.DoTextReplacements(loginTxn.text), new CadenceString(username));
-
-    while (!task.IsCompleted)
-    {
-        int dots = ((int)(Time.time * 2.0f) % 4);
-        UIManager.Instance.SetStatus("Connecting" + new string('.', dots));
-        yield return null;
-    }
-
-    // check for error. if there was an error, break.
-    if (task.Result.Error != null || task.Result.ErrorMessage != string.Empty || task.Result.Status == FlowTransactionStatus.EXPIRED)
-    {
-        onFailureCallback();
-        yield break;
-    }
-
-    // login successful!
-    onSuccessCallback(username, flowAddress);
-}
-```
-
-### Logout
-
-The Logout function’s role is to disconnect the authenticated wallet from your app, and to clear the FlowControl.Account object, to prevent any more transactions from being executed with those account credentials.
-
-The Logout function is very simple. Simply add the following line;
-
-```cs
-FLOW_ACCOUNT = null;
-FlowSDK.GetWalletProvider().Unauthenticate();
-```
-
-This clears the FlowAccount object, preventing any more transactions from being submitted with it, and unauthenticates the user from the wallet provider. 
-
-Your completed Logout function should now look like this;
-
-```csharp
-/// <summary>
-/// Clear the FLOW account object
-/// </summary>
-public void Logout()
-{
-    FLOW_ACCOUNT = null;
-    FlowSDK.GetWalletProvider().Unauthenticate();
-}
-```
 
 ### GetGameDataFromChain
 
@@ -449,10 +298,13 @@ This function executes the get-current-gamestate.cdc transaction on the chain, a
 /// <summary>
 /// Attempts to get the current game state for the user from chain.
 /// </summary>
+/// <param name="username">An arbitrary username the player would like to be known by on the leaderboards</param>
 /// <param name="onSuccessCallback">Callback on success</param>
 /// <param name="onFailureCallback">Callback on failure</param>
-public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
+public IEnumerator GetGameDataFromChain(string username, System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
 {
+    // get FLOW_ACCOUNT object for text replacements
+
     // execute getCurrentGameState transaction on chain
 
     // check for error. if so, break.
@@ -469,7 +321,20 @@ public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>
 }
 ```
 
-To make processing event data easier, we have declared three classes to hold the results of events emitted by transactions:
+As you will recall, we previously configured a number of text replacements.\
+These are useful, and allow us to easily change some hardcoded data from a contract or transaction, such as the deploy address of the contract, from one central location without having to edit every cadence script in our project.\
+Our transactions and scripts will need to access the text replacement function, which lives in the FlowControl.Account class, so we need to first create a FlowControl.Account object as follows;
+
+```cs
+// get FLOW_ACCOUNT object for text replacements
+FLOW_ACCOUNT = new FlowControl.Account
+{
+    GatewayName = "Emulator",   // the network to match
+    AccountConfig = new Dictionary<string, string> { { "Address", FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address } } // the account address to match
+};
+```
+
+We are about to pull down the user's saved game data. To make processing event data easier, we have declared three classes to hold the results of events emitted by transactions:
 
 ```csharp
 public class StatePayload
@@ -537,20 +402,37 @@ parameter that tells it which Cadence fields maps to that class field.
 
 We did not have to do that with the three payload classes we defined earlier because the C# field names exactly match the Cadence field names in the contract.
 
-As per the Login function, we are going to submit our transaction to chain using SubmitAndWaitUntilExecuted, and wait until our async Task is complete.
+Now that we have an Account object for text replacement, we can use it with the Transactions class to Submit our login.cdc transaction.  
 
 Add the following code to the GetGameDataFromChain function;
 
 ```cs
 // execute getCurrentGameState transaction on chain
-Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(getCurrentGameStateTxn.text));
+Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(loginTxn.text), new CadenceString(username));
+
 while (!getStateTask.IsCompleted)
 {
     int dots = ((int)(Time.time * 2.0f) % 4);
-    UIManager.Instance.SetStatus("Loading" + new string('.', dots));
+
+    UIManager.Instance.SetStatus($"Retrieving data from chain" + new string('.', dots));
+
     yield return null;
 }
+```
+Because transactions can take quite some time on chain, we create an asynchronous Task by calling SubmitAndWaitUntilExecuted from the Transactions class, to prevent blocking the main game thread.  
+Into SubmitAndWaitUntilExecuted, we pass the script that we want to execute, and any parameters.
 
+For our script, we refer to the serialized TextAsset field, loginTxn, to which we will assign login.cdc in the inspector.  
+We pass our script into SubmitAndWaitUntilExecuted via the DoTextReplacements function on our FLOW_ACCOUNT object, which will parse the cadence script and replace any of our defined text replacements.
+
+For parameters, the login.cdc script is expecting a single String parameter with the player’s display name in it. We pass in a new CadenceString object, which we create inline from the encapsulating function’s username string parameter.
+
+Next, we simply wait until our asynchronous task.IsCompleted.  
+While we wait, we update the UI with a simple animated ‘Connecting…’ text status, and yield to the Unity engine to prevent blocking the thread.
+
+Once our transaction has completed, we want to check if it was successful on chain. Add the following code beneath the transaction submission code;
+
+```cs
 // check for error. if so, break.
 if (getStateTask.Result.Error != null || getStateTask.Result.ErrorMessage != string.Empty || getStateTask.Result.Status == FlowTransactionStatus.EXPIRED)
 {
@@ -559,9 +441,15 @@ if (getStateTask.Result.Error != null || getStateTask.Result.ErrorMessage != str
 }
 ```
 
-This time, we are passing in the transaction referenced in the serialized TextAsset field getCurrentGameStateTxn, which we populated in the inspector with get-current-gamestate.cdc.  
-This transaction requires no parameters, so we can simply exclude them.
+Here we must check the transaction Result for three conditions:
 
+-   Error: Was there an error submitting the transaction to the blockchain?
+-   ErrorMessage: Was there an error during processing on the blockchain?
+-   Status: A status of EXPIRED means that the transaction did not execute on time and was discarded.
+
+Any error here, and we are simply going to fail the login, and call our onFailureCallback.
+
+Next, we process the result of our transaction.  
 This transaction is designed to return the game state for the user, and the time remaining on the word of the day, via emitted events.  
 We can access these emitted events via the .Result.Events property on our task.  
 To do so, add the following code below our submission logic;
@@ -621,9 +509,6 @@ foreach (GuessResult newResult in results)
 
 // get game start time event
 gameStartTime = Convert.FromCadence<TimePayload>(startTimeEvent.Payload).startTime;
-
-// call GameManager to set game state
-onSuccessCallback(gameStartTime, results, letterStatuses);
 ```
 From the contract, we know that the CurrentState event returns a list of ```UserGuess``` structs.  We want to convert these to a C# ```List<GuessResult>```.
 
@@ -653,17 +538,35 @@ Add the following lines to the bottom of the function;
 onSuccessCallback(gameStartTime, results, letterStatuses);
 ```
 
+You can now remove the ```yield return null``` at the base of the function if you wish.
+
 Your completed function should now look like this;
 
 ```csharp
-public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
+/// <summary>
+/// Attempts to get the current game state for the user from chain.
+/// </summary>
+/// <param name="username">An arbitrary username the player would like to be known by on the leaderboards</param>
+/// <param name="onSuccessCallback">Callback on success</param>
+/// <param name="onFailureCallback">Callback on failure</param>
+public IEnumerator GetGameDataFromChain(string username, System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
 {
+    // get FLOW_ACCOUNT object for text replacements
+    FLOW_ACCOUNT = new FlowControl.Account
+    {
+        GatewayName = "Emulator",   // the network to match
+        AccountConfig = new Dictionary<string, string> { { "Address", FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address } } // the account address to match
+    };
+
     // execute getCurrentGameState transaction on chain
-    Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(getCurrentGameStateTxn.text));
+    Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(loginTxn.text), new CadenceString(username));
+
     while (!getStateTask.IsCompleted)
     {
         int dots = ((int)(Time.time * 2.0f) % 4);
-        UIManager.Instance.SetStatus("Loading" + new string('.', dots));
+
+        UIManager.Instance.SetStatus($"Retrieving data from chain" + new string('.', dots));
+
         yield return null;
     }
 
@@ -674,23 +577,21 @@ public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>
         yield break;
     }
 
-    // get events
+    // transaction success, get data from emitted events
     List<FlowEvent> events = getStateTask.Result.Events;
     FlowEvent currentStateEvent = events.Find(x => x.Type.EndsWith(".CurrentState"));
     FlowEvent startTimeEvent = events.Find(x => x.Type.EndsWith(".LastGameStart"));
+
     if (currentStateEvent == null || startTimeEvent == null)
     {
         onFailureCallback();
         yield break;
     }
 
-    // transaction success, get data from emitted events
-    Decimal gameStartTime = 0;
-    List<GuessResult> results = new List<GuessResult>();
-    Dictionary<string, string> letterStatuses = new Dictionary<string, string>();
-    
     // process current game state event
-    results = Convert.FromCadence<StatePayload>(currentStateEvent.Payload).currentState;
+    Decimal gameStartTime = 0;
+    Dictionary<string, string> letterStatuses = new Dictionary<string, string>();
+    List<GuessResult> results = Convert.FromCadence<StatePayload>(currentStateEvent.Payload).currentState;
     foreach (GuessResult newResult in results)
     {
         newResult.word = newResult.word.ToUpper();
@@ -723,11 +624,39 @@ public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>
 
     // get game start time event
     gameStartTime = Convert.FromCadence<TimePayload>(startTimeEvent.Payload).startTime;
-    
+
     // call GameManager to set game state
     onSuccessCallback(gameStartTime, results, letterStatuses);
 }
 ```
+
+
+### Logout
+
+The Logout function’s role is to disconnect the authenticated wallet from your app, and to clear the FlowControl.Account object, to prevent any more transactions from being executed with those account credentials.
+
+The Logout function is very simple. Simply add the following line;
+
+```cs
+FLOW_ACCOUNT = null;
+FlowSDK.GetWalletProvider().Unauthenticate();
+```
+
+This clears the FlowAccount object, preventing any more transactions from being submitted with it, and unauthenticates the user from the wallet provider. 
+
+Your completed Logout function should now look like this;
+
+```csharp
+/// <summary>
+/// Clear the FLOW account object
+/// </summary>
+public void Logout()
+{
+    FLOW_ACCOUNT = null;
+    FlowSDK.GetWalletProvider().Unauthenticate();
+}
+```
+
 
 ### SubmitGuess
 
@@ -778,9 +707,8 @@ If the word guess is deemed to be invalid we call the onFailure callback and bre
 For the second phase of the function, add the following code below phase one;
 
 ```cs
-// word is valid, submit guess via transaction to FLOW chain
-Task<FlowTransactionResult> submitGuessTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(submitGuessTxn.text), new CadenceString(wordToLower()));
-
+// if word is valid, submit guess via transaction to FLOW chain
+Task<FlowTransactionResult> submitGuessTask = Transactions.SubmitAndWaitUntilExecuted(FLOW_ACCOUNT.DoTextReplacements(submitGuessTxn.text), new CadenceString(word.ToLower()));
 while (!submitGuessTask.IsCompleted)
 {
     int dots = ((int)(Time.time * 2.0f) % 4);

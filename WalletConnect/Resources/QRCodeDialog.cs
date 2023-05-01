@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using ZXing;
@@ -20,6 +21,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
         private bool _Initialised = false;
         private string _Uri = "";
+        private Action _OnCancelled = null;
 
         private void OnEnable()
         {
@@ -35,7 +37,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         /// Generates the QR code. 
         /// </summary>
         /// <param name="uri">The WalletConnect uri to be presented as a QR code.</param>
-        public bool Init(string uri)
+        /// <param name="onCancelled">Callback for when users cancel the QR Code dialog.</param>
+        public bool Init(string uri, Action onCancelled)
         {
             if (QrCodeObject == null)
             {
@@ -50,6 +53,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             }
 
             _Uri = uri;
+            _OnCancelled = onCancelled;
 
             Texture2D myQR = generateQR(uri);
             QrCodeObject.texture = myQR;
@@ -114,6 +118,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         /// </summary>
         public void OnCloseButtonClicked()
         {
+            _OnCancelled();
             Destroy(gameObject);
         }
     }

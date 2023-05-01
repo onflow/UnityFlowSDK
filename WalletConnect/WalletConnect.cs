@@ -5,6 +5,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using DapperLabs.Flow.Sdk.Crypto;
 using DapperLabs.Flow.Sdk.DataObjects;
+using DapperLabs.Flow.Sdk.Unity;
 using WalletConnectSharp.Common.Utils;
 using WalletConnectSharp.Network.Models;
 using WalletConnectSharp.Sign;
@@ -43,6 +44,10 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
         GameObject qrDialog = null;
 
+        string _currentWalletUrl = "";
+
+        bool _killSessionTask = false;
+
         /// <summary>
         /// Initializes the Wallet Connect provider. Must be called before calling anything else. 
         /// </summary>
@@ -62,6 +67,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             {
                 throw new Exception("Wallet Connect: Init() - Incorrect config type given. Config type must be WalletConnectConfig.");
             }
+
+            UnityThreadExecutor.Init();
         }
 
         /// <summary>
@@ -77,6 +84,12 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         /// <returns>An async Task. This function can be awaited.</returns>
         async Task IWallet.Authenticate(string username, Action<string> OnAuthSuccess, Action OnAuthFailed)
         {
+            if (_session.Acknowledged != null && (bool)_session.Acknowledged)
+            {
+                Debug.LogError("Wallet Connect: Already authenticated");
+                return;
+            }
+
             if (wcConfig == null)
             {
                 Debug.LogError("Wallet Connect: Trying to call Authenticate - call Init() first!");
@@ -279,7 +292,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
                 Name = "Lilico",
                 IsInstalled = installedApps[0],
                 Icon = Resources.Load<Texture2D>("WalletSelectIcons/lilicoIcon"),
-                Uri = $"https://link.lilico.app/wc?uri={urlEncoded}"
+                BaseUri = "https://link.lilico.app",
+                ConnectUri = $"https://link.lilico.app/wc?uri={urlEncoded}"
             };
 
             if (installedApps[1])
@@ -289,14 +303,17 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
                     Name = "Dapper SC",
                     IsInstalled = installedApps[1],
                     Icon = Resources.Load<Texture2D>("WalletSelectIcons/dapperIcon"),
-                    Uri = $"dapper-pro://wc?uri={urlEncoded}"
+                    BaseUri = "dapper-pro://",
+                    ConnectUri = $"dapper-pro://wc?uri={urlEncoded}"
                 };
             }
 
-            bool initSuccess = walletSelectDialogScript.Init("Select Wallet", wcProviders, (string url) => 
+            bool initSuccess = walletSelectDialogScript.Init("Select Wallet", wcProviders, (WalletSelectDialog.WalletProviderData selectedWallet) => 
             {
-                Debug.Log($"url: {url}");
-                Application.OpenURL(url);
+                Debug.Log($"url: {selectedWallet.ConnectUri}");
+
+                _currentWalletUrl = selectedWallet.BaseUri;
+                Application.OpenURL(selectedWallet.ConnectUri);
                 UnityEngine.Object.Destroy(walletSelectDialog);
             });
 
@@ -311,7 +328,11 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
                 return;
             }
 
-            bool initSuccess = qrDialogScript.Init(_connectedData.Uri);
+            bool initSuccess = qrDialogScript.Init(_connectedData.Uri, () => 
+            {
+                Debug.Log("Dialog closed, stopping session connection.");
+                _killSessionTask = true;
+            });
 
             if (initSuccess == false)
             {
@@ -321,7 +342,25 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             }
 #endif
             Debug.Log("Waiting for approval...");
-            _session = await _connectedData.Approval;
+            
+            Task<SessionStruct> sessionTask = _connectedData.Approval;
+            while (sessionTask.IsCompleted == false)
+            {
+                await Task.Delay(500);
+                if (_killSessionTask)
+                {
+                    OnAuthFailed();
+                    _killSessionTask = false;
+                    return;
+                }
+            }
+
+            if (sessionTask.IsFaulted)
+            {
+                OnAuthFailed();
+                return;
+            }
+            _session = sessionTask.Result;
 
             Debug.Log($"_session.Topic: {_session.Topic}");
 
@@ -401,6 +440,16 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
             Debug.Log($"WalletConnect: sign transaction request: {JsonConvert.SerializeObject(req)}");
 
+#if UNITY_ANDROID || UNITY_IOS
+            if (_currentWalletUrl != "")
+            {
+                UnityThreadExecutor.ExecuteInUpdate(() =>
+                {
+                    Application.OpenURL(_currentWalletUrl);
+                });
+            }
+#endif
+            Debug.Log("sending request...");
             var responseReturned = await _client.Engine.Request<TxSignRequest, TxSignResponse>(_session.Topic, req);
 
             Debug.Log($"WalletConnect: sign transaction response: {JsonConvert.SerializeObject(responseReturned)}");
@@ -435,6 +484,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
                 _connectedData = null;
                 _session = new SessionStruct();
+
+                _currentWalletUrl = "";
             }
         }
 

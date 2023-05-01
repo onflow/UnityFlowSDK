@@ -13,7 +13,6 @@ namespace FlowWordsTutorial
         // UI hookups
         [SerializeField] TMPro.TMP_InputField UsernameTMP;
         [SerializeField] TMPro.TextMeshProUGUI Status;
-        [SerializeField] UnityEngine.UI.Button LoginButton;
 
         /// <summary>
         /// When enabled, load data from last play from PlayerPrefs and sets the text box contents accordingly
@@ -33,8 +32,6 @@ namespace FlowWordsTutorial
         /// </summary>
         public void LoginClicked()
         {
-            LoginButton.interactable = false;
-
             Username = UsernameTMP.text;
 
             PlayerPrefs.SetString("Username", Username);

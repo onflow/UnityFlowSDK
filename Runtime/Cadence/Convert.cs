@@ -110,6 +110,10 @@ namespace DapperLabs.Flow.Sdk.Cadence
             ["Capability"] = typeof(CadenceCapabilityValue),
         };
 
+#if UNITY_IOS
+        private static bool done_aot_parse = false;
+#endif
+
         /// <summary>
         /// Converts a primitive Cadence type into a C# type
         /// </summary>
@@ -119,6 +123,25 @@ namespace DapperLabs.Flow.Sdk.Cadence
         /// <exception cref="Exception">Thrown if an error occurs</exception>
         private static T FromCadencePrimitive<T>(CadenceBase cadence)
         {
+#if UNITY_IOS
+            // This is required on iOS so that IL2CPP generates code for these Parse functions.
+            // It does nothing at runtime and is only required for AOT compilation. 
+            if (!done_aot_parse)
+            {
+                var test1 = BigInteger.Parse("1");
+                var test2 = SByte.Parse("1");
+                var test3 = Int16.Parse("1");
+                var test4 = Int32.Parse("1");
+                var test5 = Int64.Parse("1");
+                var test6 = Byte.Parse("1");
+                var test7 = UInt16.Parse("1");
+                var test8 = UInt32.Parse("1");
+                var test9 = UInt64.Parse("1");
+                var test10 = Decimal.Parse("1.0");
+                done_aot_parse = true;
+            }
+#endif
+
             //CadenceComposites are not a primitive type.  Error.
             if (cadence.GetType() == typeof(CadenceComposite))
             {

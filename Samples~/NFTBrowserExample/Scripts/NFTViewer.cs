@@ -6,9 +6,9 @@ using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.DataObjects;
 using DapperLabs.Flow.Sdk.Unity;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
 
 namespace NFTViewerExample
@@ -37,8 +37,8 @@ namespace NFTViewerExample
         public GameObject nftDisplayPanel;
 
         //Input field where target address is input
-        public TMP_InputField addressInput;
-        public TMP_Text nftCount;
+        public InputField addressInput;
+        public Text nftCount;
 
         //Text that is displayed when loading
         public GameObject loadingTextObject;
@@ -59,6 +59,8 @@ namespace NFTViewerExample
         // Start is called before the first frame update
         void Start()
         {
+            addressInput.text = address;
+            
             //Connect to Flow Mainnet
             FlowSDK.Init(new FlowConfig
             {

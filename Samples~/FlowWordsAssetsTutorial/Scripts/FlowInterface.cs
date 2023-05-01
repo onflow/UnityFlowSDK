@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using DapperLabs.Flow.Sdk;
 using UnityEngine;
+using DapperLabs.Flow.Sdk;
 using DapperLabs.Flow.Sdk.Unity;
-
 
 namespace FlowWordsTutorial
 {
@@ -40,7 +39,6 @@ namespace FlowWordsTutorial
         // The TextAssets containing Cadence scripts and transactions that will be used for the game.
         [Header("Scripts and Transactions")]
         [SerializeField] CadenceTransactionAsset loginTxn;
-        [SerializeField] CadenceTransactionAsset getCurrentGameStateTxn;
         [SerializeField] CadenceScriptAsset checkWordScript;
         [SerializeField] CadenceTransactionAsset submitGuessTxn;
 
@@ -93,27 +91,6 @@ namespace FlowWordsTutorial
         }
 
         /// <summary>
-        /// Success callback for Wallet Provider's Authenticate method. 
-        /// </summary>
-        /// <param name="username">The name that the user has provided (for leaderboard)</param>
-        /// <param name="flowAddress">The address of the authenticated Flow Account</param>
-        /// <param name="onSuccessCallback">Game callback for successful login</param>
-        /// <param name="onFailureCallback">Game callback for failed login</param>
-        /// <returns></returns>
-        private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
-        {
-            // get FLOW account - we are only going to use this for text replacements
-
-            // execute log in transaction on chain
-
-            // check for error. if there was an error, break.
-
-            // login successful!
-
-            yield return null;
-        }
-
-        /// <summary>
         /// Clear the FLOW account object
         /// </summary>
         public void Logout()
@@ -123,10 +100,13 @@ namespace FlowWordsTutorial
         /// <summary>
         /// Attempts to get the current game state for the user from chain.
         /// </summary>
+        /// <param name="username">An arbitrary username the player would like to be known by on the leaderboards</param>
         /// <param name="onSuccessCallback">Callback on success</param>
         /// <param name="onFailureCallback">Callback on failure</param>
-        public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
+        public IEnumerator GetGameDataFromChain(string username, System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
         {
+            // get FLOW_ACCOUNT object for text replacements
+
             // execute getCurrentGameState transaction on chain
 
             // check for error. if so, break.

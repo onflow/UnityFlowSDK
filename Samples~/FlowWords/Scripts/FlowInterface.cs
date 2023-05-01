@@ -96,41 +96,14 @@ namespace FlowWords
         public void Login(string username, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
         {
             // Authenticate an account
-            FlowSDK.GetWalletProvider().Authenticate("", // blank string will show list of accounts from Accounts tab of Flow Control Window
-                                                    (string flowAddress) => StartCoroutine(OnAuthSuccess(username, flowAddress, onSuccessCallback, onFailureCallback)), 
-                                                    onFailureCallback);
+            if (FlowSDK.GetWalletProvider().IsAuthenticated() == false)
+            {
+                FlowSDK.GetWalletProvider().Authenticate("", // blank string will show list of accounts from Accounts tab of Flow Control Window
+                                                        (string address) => onSuccessCallback(address, username), 
+                                                        onFailureCallback);
+            }
         }
 
-        /// <summary>
-        /// Success callback for Wallet Provider's Authenticate method. 
-        /// </summary>
-        /// <param name="username">The name that the user has provided (for leaderboard)</param>
-        /// <param name="flowAddress">The address of the authenticated Flow Account</param>
-        /// <param name="onSuccessCallback">Game callback for successful login</param>
-        /// <param name="onFailureCallback">Game callback for failed login</param>
-        /// <returns></returns>
-        private IEnumerator OnAuthSuccess(string username, string flowAddress, System.Action<string, string> onSuccessCallback, System.Action onFailureCallback)
-        {
-            // execute log in transaction on chain
-            Task<FlowTransactionResult> task = Transactions.SubmitAndWaitUntilSealed(DoTextSubstitutions(loginTxn.text), new CadenceString(username));
-
-            while (!task.IsCompleted)
-            {
-                int dots = ((int)(Time.time * 2.0f) % 4);
-                UIManager.Instance.SetStatus("Connecting" + new string('.', dots));
-                yield return null;
-            }
-
-            // check for error. if there was an error, break.
-            if (task.Result.Error != null || task.Result.ErrorMessage != string.Empty || task.Result.Status == FlowTransactionStatus.EXPIRED)
-            {
-                onFailureCallback();
-                yield break;
-            }
-
-            // login successful!
-            onSuccessCallback(username, flowAddress);
-        }
 
         /// <summary>
         /// Clear the FLOW account object
@@ -161,14 +134,25 @@ namespace FlowWords
         /// </summary>
         /// <param name="onSuccessCallback">Callback on success</param>
         /// <param name="onFailureCallback">Callback on failure</param>
-        public IEnumerator GetGameDataFromChain(System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
+        public IEnumerator GetGameDataFromChain(string username, System.Action<Decimal, List<GuessResult>, Dictionary<string, string>> onSuccessCallback, System.Action onFailureCallback)
         {
             // execute getCurrentGameState transaction on chain
-            Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted(DoTextSubstitutions(getCurrentGameStateTxn.text));
+            string txnId = null;
+            Task<FlowTransactionResult> getStateTask = Transactions.SubmitAndWaitUntilExecuted((string id) => { txnId = id; }, DoTextSubstitutions(loginTxn.text), new CadenceString(username));
+
             while (!getStateTask.IsCompleted)
             {
                 int dots = ((int)(Time.time * 2.0f) % 4);
-                UIManager.Instance.SetStatus("Loading" + new string('.', dots));
+
+                if (txnId == null)
+                {
+                    UIManager.Instance.SetStatus("Waiting for user to sign transaction" + new string('.', dots));
+                }
+                else
+                {
+                    UIManager.Instance.SetStatus($"Retrieving data from chain" + new string('.', dots));
+                }
+
                 yield return null;
             }
 
@@ -269,12 +253,22 @@ namespace FlowWords
             }
 
             // word is valid, submit guess via transaction to FLOW chain
-            Task<FlowTransactionResult> submitGuessTask = Transactions.SubmitAndWaitUntilExecuted(DoTextSubstitutions(submitGuessTxn.text), new CadenceString(word.ToLower()));
+            string txnId = null;
+            Task<FlowTransactionResult> submitGuessTask = Transactions.SubmitAndWaitUntilExecuted((string id) => { txnId = id; }, DoTextSubstitutions(submitGuessTxn.text), new CadenceString(word.ToLower()));
 
             while (!submitGuessTask.IsCompleted)
             {
                 int dots = ((int)(Time.time * 2.0f) % 4);
-                UIManager.Instance.SetStatus("Waiting for server" + new string('.', dots));
+
+                if (txnId == null)
+                {
+                    UIManager.Instance.SetStatus("Waiting for user to sign transaction" + new string('.', dots));
+                }
+                else
+                {
+                    UIManager.Instance.SetStatus("Retrieving data from chain" + new string('.', dots));
+                }
+
                 yield return null;
             }
 

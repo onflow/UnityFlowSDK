@@ -20,7 +20,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         [Header("Prefabs")]
         public GameObject WalletSelectProviderPrefab;
 
-        private Action<string> _OnSelectedWallet = null;
+        private Action<WalletSelectDialog.WalletProviderData> _OnSelectedWallet = null;
         private bool _Initialised = false;
         private float _loadingTimer = 0.0f;
 
@@ -54,7 +54,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         /// <param name="header">Header for the dialog.</param>
         /// <param name="providers">Array of WalletSelectDialog.WalletProviders to present to the user.</param>
         /// <param name="OnSelectedWallet">Callback to call when user selects a wallet provider.</param>
-        public bool Init(string header, WalletProviderData[] providers, Action<string> OnSelectedWallet)
+        public bool Init(string header, WalletProviderData[] providers, Action<WalletSelectDialog.WalletProviderData> OnSelectedWallet)
         {
             if (WalletSelectProviderPrefab == null)
             {
@@ -89,7 +89,8 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             public string Name;
             public Texture2D Icon;
             public bool IsInstalled;
-            public string Uri;
+            public string BaseUri;
+            public string ConnectUri;
         }
 
         /// <summary>

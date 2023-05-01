@@ -1,5 +1,4 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -27,7 +26,7 @@ namespace NFTViewerExample
         public Button previous;
         public Button next;
 
-        public TMP_Text mediaCount;
+        public Text mediaCount;
 
         //Configures this display panel to show information for the passed in NFT
         public void Init(NFT nftData)
@@ -36,7 +35,7 @@ namespace NFTViewerExample
             nft = nftData;
 
             //Set the text to the NFT's data
-            GetComponentInChildren<TMP_Text>().text = $"<b>Name:</b> {nftData.Display?.name}\n\n<b>Description:</b> {nftData.Display?.description}\n\n<b>Serial:</b> {nftData.Serial?.number}\n\n<b>External URL:</b> {nftData.ExternalURL?.url}";
+            GetComponentInChildren<Text>().text = $"<b>Name:</b> {nftData.Display?.name}\n\n<b>Description:</b> {nftData.Display?.description}\n\n<b>Serial:</b> {nftData.Serial?.number}\n\n<b>External URL:</b> {nftData.ExternalURL?.url}";
 
             //Set the index to 0
             index = 0;

@@ -92,11 +92,11 @@ namespace FlowWords
         /// </summary>
         /// <param name="username">The username chosen by the user</param>
         /// <param name="address">The user's Flow address</param>
-        private void OnLoginSuccess(string username, string address)
+        private void OnLoginSuccess(string address, string username)
         {
             UIManager.Instance.SetStatus("Login Success - Getting game state");
 
-            NewGame();
+            NewGame(username);
         }
 
         /// <summary>
@@ -111,9 +111,9 @@ namespace FlowWords
         /// <summary>
         /// Starts a coroutine that initializes a new game from data on chain.
         /// </summary>
-        public void NewGame()
+        public void NewGame(string username)
         {
-            StartCoroutine(FlowInterface.Instance.GetGameDataFromChain(OnNewGameSuccess, OnNewGameFailure));
+            StartCoroutine(FlowInterface.Instance.GetGameDataFromChain(username, OnNewGameSuccess, OnNewGameFailure));
         }
 
         /// <summary>

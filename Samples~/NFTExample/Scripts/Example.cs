@@ -54,11 +54,14 @@ namespace NFTExample
 
             //Register the DevWallet provider that we will be using
             FlowSDK.RegisterWalletProvider(new DevWalletProvider());
-
-            //Deploy the SDKExampleNFT contract if it is not already deployed
-            StartCoroutine(DeployContracts());
+            
         }
 
+        public void DeployContracts()
+        {
+            //Deploy the SDKExampleNFT contract if it is not already deployed
+            StartCoroutine(DeployContractsCoroutine());
+        }
 
         // Mints an NFT and stores it on the authenticated account.
         public void MintNFT()
@@ -209,7 +212,7 @@ namespace NFTExample
         }
 
         // Deploy contracts as needed (upon first run, or after a data purge)
-        public IEnumerator DeployContracts()
+        public IEnumerator DeployContractsCoroutine()
         {
             statusText.text = "Verifying contracts";
             //Wait 1 second to ensure emulator has started up and service account information has been captured.

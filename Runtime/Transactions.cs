@@ -202,10 +202,11 @@ namespace DapperLabs.Flow.Sdk
 		/// </summary>
 		/// <param name="script">The text contents of the transaction to execute</param>
 		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <param name="onSubmitSuccess">Callback that will be called once the transaction is successfully submitted, passes in the transaction ID as a parameter</param>
 		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
-		private static async Task<FlowTransactionResult> SubmitAndWaitUntil(FlowTransactionStatus status, string text, List<CadenceBase> arguments)
+		private static async Task<FlowTransactionResult> SubmitAndWaitUntil(FlowTransactionStatus status, string script, List<CadenceBase> arguments, Action<string> onSubmitSuccess = null)
 		{
-			FlowTransactionResponse response = await Submit(text, arguments);
+			FlowTransactionResponse response = await Submit(script, arguments);
 
 			if (response.Error != null)
 			{
@@ -214,6 +215,11 @@ namespace DapperLabs.Flow.Sdk
 					Error = response.Error
 				};
 			}
+
+            if (onSubmitSuccess != null)
+            {
+				onSubmitSuccess(response.Id);
+            }
 
 			FlowTransactionResult result = null;
 			FlowTransactionStatus txnStatus = FlowTransactionStatus.UNKNOWN;
@@ -238,9 +244,9 @@ namespace DapperLabs.Flow.Sdk
 		/// <param name="script">The text contents of the transaction to execute</param>
 		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
 		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
-		public static async Task<FlowTransactionResult> SubmitAndWaitUntilExecuted(string text, params CadenceBase[] arguments)
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilExecuted(string script, params CadenceBase[] arguments)
 		{
-			return await SubmitAndWaitUntil(FlowTransactionStatus.EXECUTED, text, new List<CadenceBase>(arguments));
+			return await SubmitAndWaitUntil(FlowTransactionStatus.EXECUTED, script, new List<CadenceBase>(arguments));
 		}
 
 		/// <summary>
@@ -249,9 +255,33 @@ namespace DapperLabs.Flow.Sdk
 		/// <param name="script">The text contents of the transaction to execute</param>
 		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
 		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
-		public static async Task<FlowTransactionResult> SubmitAndWaitUntilSealed(string text, params CadenceBase[] arguments)
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilSealed(string script, params CadenceBase[] arguments)
+		{
+			return await SubmitAndWaitUntil(FlowTransactionStatus.SEALED, script, new List<CadenceBase>(arguments));
+		}
+
+		/// <summary>
+		/// Submits a transaction to the blockchain and waits until executed before returning
+		/// </summary>
+		/// <param name="onSubmitSuccess">Callback that will be called once the transaction is successfully submitted, passes in the transaction ID as a parameter</param>
+		/// <param name="script">The text contents of the transaction to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilExecuted(Action<string> onSubmitSuccess, string script, params CadenceBase[] arguments)
+		{
+			return await SubmitAndWaitUntil(FlowTransactionStatus.EXECUTED, script, new List<CadenceBase>(arguments), onSubmitSuccess);
+		}
+
+		/// <summary>
+		/// Submits a transaction to the blockchain and waits until sealed before returning
+		/// </summary>
+		/// <param name="onSubmitSuccess">Callback that will be called once the transaction is successfully submitted, passes in the transaction ID as a parameter</param>
+		/// <param name="script">The text contents of the transaction to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the transaction</param>
+		/// <returns>A Task that will resolve to a FlowTransactionResult upon completion</returns>
+		public static async Task<FlowTransactionResult> SubmitAndWaitUntilSealed(Action<string> onSubmitSuccess, string script, params CadenceBase[] arguments)
         {
-			return await SubmitAndWaitUntil(FlowTransactionStatus.SEALED, text, new List<CadenceBase>(arguments));
+			return await SubmitAndWaitUntil(FlowTransactionStatus.SEALED, script, new List<CadenceBase>(arguments), onSubmitSuccess);
 		}
 
 		/// <summary>

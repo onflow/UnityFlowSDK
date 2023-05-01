@@ -1,6 +1,6 @@
 using DapperLabs.Flow.Sdk.Cadence;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace NFTViewerExample
 {
@@ -11,7 +11,7 @@ namespace NFTViewerExample
         // Start is called before the first frame update
         void Start()
         {
-            GetComponentInChildren<TMP_Text>().text = path.Identifier;
+            GetComponentInChildren<Text>().text = path.Identifier;
         }
 
         public void OnClicked()

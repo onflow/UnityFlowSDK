@@ -13,16 +13,14 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
         public Text ProviderName;
         public GameObject InstalledIndicator;
         public Button SelectButton;
-        private string Uri;
 
-        internal void Init(WalletSelectDialog.WalletProviderData walletProvider, Action<string> OnSelectedWallet)
+        internal void Init(WalletSelectDialog.WalletProviderData walletProvider, Action<WalletSelectDialog.WalletProviderData> OnSelectedWallet)
         {
             ProviderName.text = walletProvider.Name;
             ProviderIcon.texture = walletProvider.Icon;
             InstalledIndicator.SetActive(walletProvider.IsInstalled);
-            Uri = walletProvider.Uri;
 
-            SelectButton.onClick.AddListener(() => { OnSelectedWallet(Uri); });
+            SelectButton.onClick.AddListener(() => { OnSelectedWallet(walletProvider); });
         }
     }
 }
