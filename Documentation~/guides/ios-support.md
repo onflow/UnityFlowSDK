@@ -17,3 +17,12 @@ If your version of Unity is older than 2022.1 (keeping in mind the minimum suppo
 3. Change **IL2CPP Code Generation** to **Faster (smaller) builds**. 
 
 The reason this must be changed is because the Flow SDK utilises generic sharing of value types. For a detailed description on this problem and how it has been fixed in 2022.1, please read this [Unity blog post](https://blog.unity.com/engine-platform/il2cpp-full-generic-sharing-in-unity-2022-1-beta). 
+
+## Managed Stripping Level
+
+Similar to the previous setting, sometimes automatic code stripping on iOS can strip out functions that the optimizer thinks aren't needed, but they actually are. We highly recommend you change this setting to avoid any of these issues. 
+
+1. Open Project Settings (under Edit). 
+2. Go to the Player tab. 
+3. Expand Other Settings and scroll down to Optimization. 
+4. Change **Managed Stripping Level** to **Minimal**. 

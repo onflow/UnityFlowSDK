@@ -44,9 +44,11 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 
         GameObject qrDialog = null;
 
-        string _currentWalletUrl = "";
-
         bool _killSessionTask = false;
+
+#if UNITY_ANDROID || UNITY_IOS
+        string _currentWalletUrl = "";
+#endif
 
         /// <summary>
         /// Initializes the Wallet Connect provider. Must be called before calling anything else. 
@@ -485,7 +487,9 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
                 _connectedData = null;
                 _session = new SessionStruct();
 
+#if UNITY_ANDROID || UNITY_IOS
                 _currentWalletUrl = "";
+#endif
             }
         }
 

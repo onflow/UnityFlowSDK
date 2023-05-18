@@ -5,27 +5,30 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 
-internal class BuildPostProcessor
+namespace DapperLabs.Flow.Sdk.WalletConnect
 {
-
-    [PostProcessBuild]
-    internal static void ChangeXcodePlist(BuildTarget buildTarget, string path)
+    internal class BuildPostProcessor
     {
 
-        if (buildTarget == BuildTarget.iOS)
+        [PostProcessBuild]
+        internal static void ChangeXcodePlist(BuildTarget buildTarget, string path)
         {
 
-            string plistPath = path + "/Info.plist";
-            PlistDocument plist = new PlistDocument();
-            plist.ReadFromFile(plistPath);
+            if (buildTarget == BuildTarget.iOS)
+            {
 
-            PlistElementDict rootDict = plist.root;
+                string plistPath = path + "/Info.plist";
+                PlistDocument plist = new PlistDocument();
+                plist.ReadFromFile(plistPath);
 
-            PlistElementArray arr = rootDict.CreateArray("LSApplicationQueriesSchemes");
-            arr.AddString("dapper-pro");
-            arr.AddString("lilico");
+                PlistElementDict rootDict = plist.root;
 
-            File.WriteAllText(plistPath, plist.WriteToString());
+                PlistElementArray arr = rootDict.CreateArray("LSApplicationQueriesSchemes");
+                arr.AddString("dapper-pro");
+                arr.AddString("lilico");
+
+                File.WriteAllText(plistPath, plist.WriteToString());
+            }
         }
     }
 }
