@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using DapperLabs.Flow.Sdk.Exceptions;
 using DapperLabs.Flow.Sdk.Network;
 using DapperLabs.Flow.Sdk.DataObjects;
+using DapperLabs.Flow.Sdk.Cadence;
+using System.Collections.Generic;
 
 namespace DapperLabs.Flow.Sdk
 {
@@ -30,5 +32,22 @@ namespace DapperLabs.Flow.Sdk
 				};
 			}
 		}
-    }
+
+		/// <summary>
+		/// Executes the passed script and parameters on the currently connected network against the latest block on the blockchain.
+		/// </summary>
+		/// <param name="script">The text contents of the script to execute</param>
+		/// <param name="arguments">Cadence arguments that will be passed to the script</param>
+		/// <returns>A Task that will resolve into a FlowScriptResponse when complete.</returns>
+		public static async Task<FlowScriptResponse> ExecuteAtLatestBlock(string script, params CadenceBase[] arguments)
+		{
+			FlowScriptRequest scriptRequest = new FlowScriptRequest
+			{
+				Script = script,
+				Arguments = new List<CadenceBase>(arguments)
+			};
+
+			return await ExecuteAtLatestBlock(scriptRequest);
+		}
+	}
 }

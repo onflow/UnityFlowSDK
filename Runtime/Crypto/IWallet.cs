@@ -11,12 +11,18 @@ namespace DapperLabs.Flow.Sdk.Crypto
     public interface IWallet
     {
         /// <summary>
+        /// Initializes the wallet provider. Should be called before calling anything else. 
+        /// </summary>
+        /// <param name="config">A reference to a derived WalletConfig object containing config data.</param>
+        public void Init(WalletConfig config);
+
+        /// <summary>
         /// Authenticate's a user with the wallet provider. 
         /// </summary>
         /// <param name="username">A username hint of the account to be authenticated.</param>
         /// <param name="OnAuthSuccess">Callback to be called on successful authentication. The account address is passed as a param.</param>
         /// <param name="OnAuthFailed">Callback to be called on failed authentication.</param>
-        public void Authenticate(string username, System.Action<string> OnAuthSuccess, System.Action OnAuthFailed);
+        public Task Authenticate(string username, System.Action<string> OnAuthSuccess, System.Action OnAuthFailed);
 
         /// <summary>
         /// Unauthenticates a user from the wallet provider. Any cached authentication data
@@ -49,5 +55,15 @@ namespace DapperLabs.Flow.Sdk.Crypto
         /// </summary>
         /// <returns>The FlowAccount of the authenticated user.</returns>
         public SdkAccount GetAuthenticatedAccount();
+    }
+
+    /// <summary>
+    /// Abstract base class for IWallet configuration. Inherit from this for a 
+    /// specific IWallet implementation if needed, adding whatever config data is needed
+    /// for that implementation. 
+    /// </summary>
+    public abstract class WalletConfig
+    {
+
     }
 }

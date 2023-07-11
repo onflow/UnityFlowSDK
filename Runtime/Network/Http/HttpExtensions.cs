@@ -120,7 +120,7 @@ namespace DapperLabs.Flow.Sdk.Network
                     EventIndex = uint.Parse(ev.event_index)
                 };
 
-                byte[] payloadData = Convert.FromBase64String(ev.payload);
+                byte[] payloadData = System.Convert.FromBase64String(ev.payload);
                 string decodedPayload = Encoding.UTF8.GetString(payloadData);
 
                 flowEvent.Payload = JsonConvert.DeserializeObject<CadenceBase>(decodedPayload, new CadenceCreationConverter());
@@ -184,14 +184,14 @@ namespace DapperLabs.Flow.Sdk.Network
             HttpScriptRequest ret = new HttpScriptRequest();
 
             byte[] scriptBytes = Encoding.UTF8.GetBytes(src.Script);
-            ret.script = Convert.ToBase64String(scriptBytes);
+            ret.script = System.Convert.ToBase64String(scriptBytes);
 
             List<string> temp = new List<string>();
             foreach (CadenceBase arg in src.Arguments)
             {
                 string jsonArg = JsonConvert.SerializeObject(arg);
                 byte[] argBytes = Encoding.UTF8.GetBytes(jsonArg);
-                temp.Add(Convert.ToBase64String(argBytes));
+                temp.Add(System.Convert.ToBase64String(argBytes));
             }
 
             ret.arguments = temp.ToArray();
@@ -204,14 +204,14 @@ namespace DapperLabs.Flow.Sdk.Network
             HttpTransactionRequest ret = new HttpTransactionRequest();
 
             byte[] scriptBytes = Encoding.UTF8.GetBytes(src.Script);
-            ret.script = Convert.ToBase64String(scriptBytes);
+            ret.script = System.Convert.ToBase64String(scriptBytes);
 
             List<string> temp = new List<string>();
             foreach (CadenceBase arg in src.Arguments)
             {
                 string jsonArg = JsonConvert.SerializeObject(arg);
                 byte[] argBytes = Encoding.UTF8.GetBytes(jsonArg);
-                temp.Add(Convert.ToBase64String(argBytes));
+                temp.Add(System.Convert.ToBase64String(argBytes));
             }
 
             ret.arguments = temp.ToArray();
@@ -247,7 +247,7 @@ namespace DapperLabs.Flow.Sdk.Network
                 {
                     address = sig.Address,
                     key_index = sig.KeyId.ToString(),
-                    signature = Convert.ToBase64String(sig.Signature)
+                    signature = System.Convert.ToBase64String(sig.Signature)
                 });
             }
 
@@ -268,12 +268,12 @@ namespace DapperLabs.Flow.Sdk.Network
                 EnvelopeSignatures = src.envelope_signatures.ToFlowTransactionSignatures()
             };
 
-            byte[] scriptBytes = Convert.FromBase64String(src.script);
+            byte[] scriptBytes = System.Convert.FromBase64String(src.script);
             tx.Script = Encoding.UTF8.GetString(scriptBytes);
 
             foreach (string arg in src.arguments)
             {
-                byte[] argBytes = Convert.FromBase64String(arg);
+                byte[] argBytes = System.Convert.FromBase64String(arg);
                 string jsonArg = Encoding.UTF8.GetString(argBytes);
                 CadenceBase cadenceArg = JsonConvert.DeserializeObject<CadenceBase>(jsonArg, new CadenceCreationConverter());
                 tx.Arguments.Add(cadenceArg);
@@ -302,7 +302,7 @@ namespace DapperLabs.Flow.Sdk.Network
                 {
                     Address = sig.address,
                     KeyId = uint.Parse(sig.key_index),
-                    Signature = Convert.FromBase64String(sig.signature)
+                    Signature = System.Convert.FromBase64String(sig.signature)
                 });
             }
 
@@ -311,9 +311,12 @@ namespace DapperLabs.Flow.Sdk.Network
 
         internal static FlowTransactionResult ToFlowTransactionResult(this HttpTransactionResult src)
         {
+            FlowTransactionStatus status = FlowTransactionStatus.UNKNOWN;
+            Enum.TryParse(src.status.ToUpper(), out status);
+
             return new FlowTransactionResult
             {
-                Status = (FlowTransactionStatus)Enum.Parse(typeof(FlowTransactionStatus), src.status.ToUpper()),
+                Status = status,
                 StatusCode = (uint)src.status_code,
                 ErrorMessage = src.error_message,
                 Events = src.events.ToFlowEvents()
@@ -343,7 +346,7 @@ namespace DapperLabs.Flow.Sdk.Network
                     Payload = ev.payload
                 };
 
-                byte[] payloadData = Convert.FromBase64String(ev.payload);
+                byte[] payloadData = System.Convert.FromBase64String(ev.payload);
                 flowEvent.Payload = Encoding.UTF8.GetString(payloadData);
 
                 ret.Add(flowEvent);

@@ -236,20 +236,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a01e2f458b9d324e951bf670964f5eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FLOW_ACCOUNT:
-    _name: 
-    infoKeys: []
-    infoValues: []
-    _gatewayName: 
-  loginTxn: {fileID: 2811297602134710623, guid: 55df6405349737c449f6afce9c376df1, type: 3}
-  getCurrentGameStateTxn: {fileID: 2811297602134710623, guid: b6942af8a8bfd54489f70082e35ba656, type: 3}
-  checkWordScript: {fileID: 2811297602134710623, guid: c6baa45b64c89184fb8c08762bbacffe, type: 3}
-  submitGuessTxn: {fileID: 2811297602134710623, guid: 22d6dd330e6a0e144ac97b7cb4b62251, type: 3}
-  GetHighScores: {fileID: 2811297602134710623, guid: e1e8c63f8ed6bd348a84318dba7b77dd, type: 3}
-  GetPlayerCumulativeScore: {fileID: 2811297602134710623, guid: 45633fa69b15e5a449f112ff2b83b93a, type: 3}
-  GetPlayerWinningStreak: {fileID: 2811297602134710623, guid: 5b38c4415d1594b4ca487891bffa7c49, type: 3}
-  GetPlayerMaxWinningStreak: {fileID: 2811297602134710623, guid: 42eb3476c4cf4784285bda8ba1fedcbf, type: 3}
-  GetGuessDistribution: {fileID: 2811297602134710623, guid: 6b0f8b523a9193b4694c11ae254e40ea, type: 3}
+  loginTxn: {fileID: 3232733424486734734, guid: 55df6405349737c449f6afce9c376df1, type: 3}
+  getCurrentGameStateTxn: {fileID: 3232733424486734734, guid: b6942af8a8bfd54489f70082e35ba656, type: 3}
+  checkWordScript: {fileID: 3232733424486734734, guid: c6baa45b64c89184fb8c08762bbacffe, type: 3}
+  submitGuessTxn: {fileID: 3232733424486734734, guid: 22d6dd330e6a0e144ac97b7cb4b62251, type: 3}
+  GetHighScores: {fileID: 3232733424486734734, guid: e1e8c63f8ed6bd348a84318dba7b77dd, type: 3}
+  GetPlayerCumulativeScore: {fileID: 3232733424486734734, guid: 45633fa69b15e5a449f112ff2b83b93a, type: 3}
+  GetPlayerWinningStreak: {fileID: 3232733424486734734, guid: 5b38c4415d1594b4ca487891bffa7c49, type: 3}
+  GetPlayerMaxWinningStreak: {fileID: 3232733424486734734, guid: 42eb3476c4cf4784285bda8ba1fedcbf, type: 3}
+  GetGuessDistribution: {fileID: 3232733424486734734, guid: 6b0f8b523a9193b4694c11ae254e40ea, type: 3}
 --- !u!4 &888959386
 Transform:
   m_ObjectHideFlags: 0

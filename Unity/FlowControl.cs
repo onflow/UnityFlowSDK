@@ -324,7 +324,7 @@ namespace DapperLabs.Flow.Sdk.Unity
 
         private static void StartEmulatorProcess()
         {
-            ProcessStartInfo psi = new ProcessStartInfo(FindFlowExecutable(), $"emulator --contracts --host 0.0.0.0 {(Data.EmulatorSettings.persistData?" --persist":"")}{(Data.EmulatorSettings.verbose?" --verbose" : "")}")
+            ProcessStartInfo psi = new ProcessStartInfo(FindFlowExecutable(), $"emulator --host 0.0.0.0 {(Data.EmulatorSettings.persistData?" --persist":"")}{(Data.EmulatorSettings.verbose?" --verbose" : "")}")
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -428,6 +428,9 @@ namespace DapperLabs.Flow.Sdk.Unity
             {
                 di.Delete(true);
             }
+            
+            //Delete .meta file if it exists
+            File.Delete(Data.EmulatorSettings.emulatorDataDirectory + "/flowdb.meta");
         }
 
         private void OnDisable()
