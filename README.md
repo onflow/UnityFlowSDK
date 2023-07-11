@@ -90,8 +90,7 @@ The Flow SDK for Unity requires **Unity 2021.3** or later. The following platfor
 - Windows
 - MacOS
 - Android
-
-More platforms will be supported soon, starting with iOS. 
+- iOS
 
 ## Documentation
 

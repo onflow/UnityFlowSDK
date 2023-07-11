@@ -236,15 +236,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d4bde577ab4555ae6be9c4b94285ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loginTxn: {fileID: 2811297602134710623, guid: 4d71dd71b9144362a657f806d82e4a9a, type: 3}
-  getCurrentGameStateTxn: {fileID: 2811297602134710623, guid: 1b96b25aadb049f4b15ab54db212365c, type: 3}
-  checkWordScript: {fileID: 2811297602134710623, guid: a2d1b0c55ebd46e18b8f89bbb80984c7, type: 3}
-  submitGuessTxn: {fileID: 2811297602134710623, guid: bbae550eff9a4fb09bf0d302712541b1, type: 3}
-  GetHighScores: {fileID: 2811297602134710623, guid: 19ef99cbf988490d938228765cd795b4, type: 3}
-  GetPlayerCumulativeScore: {fileID: 2811297602134710623, guid: 701f90f2b729435d90de62bcc6b47703, type: 3}
-  GetPlayerWinningStreak: {fileID: 2811297602134710623, guid: a588916fc24c40fdbd433d9e4d7e886b, type: 3}
-  GetPlayerMaxWinningStreak: {fileID: 2811297602134710623, guid: 56905026a27045d8ba575c3fe3091ef7, type: 3}
-  GetGuessDistribution: {fileID: 2811297602134710623, guid: 4e1460cb42ca4d178db664d68e3ed2ad, type: 3}
+  loginTxn: {fileID: 3232733424486734734, guid: 4d71dd71b9144362a657f806d82e4a9a, type: 3}
+  getCurrentGameStateTxn: {fileID: 3232733424486734734, guid: 1b96b25aadb049f4b15ab54db212365c, type: 3}
+  checkWordScript: {fileID: 3232733424486734734, guid: a2d1b0c55ebd46e18b8f89bbb80984c7, type: 3}
+  submitGuessTxn: {fileID: 3232733424486734734, guid: bbae550eff9a4fb09bf0d302712541b1, type: 3}
+  GetHighScores: {fileID: 3232733424486734734, guid: 19ef99cbf988490d938228765cd795b4, type: 3}
+  GetPlayerCumulativeScore: {fileID: 3232733424486734734, guid: 701f90f2b729435d90de62bcc6b47703, type: 3}
+  GetPlayerWinningStreak: {fileID: 3232733424486734734, guid: a588916fc24c40fdbd433d9e4d7e886b, type: 3}
+  GetPlayerMaxWinningStreak: {fileID: 3232733424486734734, guid: 56905026a27045d8ba575c3fe3091ef7, type: 3}
+  GetGuessDistribution: {fileID: 3232733424486734734, guid: 4e1460cb42ca4d178db664d68e3ed2ad, type: 3}
 --- !u!4 &888959386
 Transform:
   m_ObjectHideFlags: 0

@@ -1,19 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
+using Vector2 = UnityEngine.Vector2;
 
 namespace FlowWords
 {
     public struct ScoreStruct
     {
         public string Name;
-        public int Score;
-
-        public ScoreStruct(string name, int score)
-        {
-            Name = name;
-            Score = score;
-        }
+        public BigInteger Score;
     }
 
     /// <summary>
@@ -57,7 +54,7 @@ namespace FlowWords
         /// Array showing how many times the player has won.  Index is number of guesses, value is number of times the player
         /// won using that many guesses.
         /// </param>
-        private void OnLoadScoresSuccess(List<ScoreStruct> globalScores, uint playerCumulativeScore, uint playerCurrentWinningStreak, uint playerMaxWinningStreak, uint[] playerGuessDistribution)
+        private void OnLoadScoresSuccess(List<ScoreStruct> globalScores, BigInteger playerCumulativeScore, BigInteger playerCurrentWinningStreak, BigInteger playerMaxWinningStreak, List<BigInteger> playerGuessDistribution)
         {
             // populate text
             GlobalStats.text = "Global High Scores\n\n";
@@ -93,7 +90,7 @@ namespace FlowWords
 
             for (int i = 0; i < 6; i++)
             {
-                m_DistributionBars[i].sizeDelta = new Vector2(30, Mathf.Max(playerGuessDistribution[i] * pixelsPer, 3));
+                m_DistributionBars[i].sizeDelta = new Vector2(30, Mathf.Max((float)playerGuessDistribution[i] * pixelsPer, 3));
             }
         }
 

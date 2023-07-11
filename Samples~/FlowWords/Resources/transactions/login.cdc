@@ -1,5 +1,5 @@
 // Script: login.cdc
-// Purpose: Creates the UserGameState resource in the user's account, if required. Updates the user's preferred name for the leaderboards, and ticks the main contract to ensure word of the day is up to date.
+// Purpose: Creates the UserGameState resource in the user's account, if required. Updates the user's preferred name for the leaderboards, ticks the main contract to ensure word of the day is up to date, and returns the users gamestate
 
 import FlowWords from GAME_DEPLOY_ACCOUNT
 
@@ -7,6 +7,7 @@ transaction(username: String)
 {
   let account: Address
   let privCap: Capability<&{FlowWords.UserGameStateInterface}>
+  let gameCapability: Capability<&{FlowWords.GameInterface}>
 
   prepare(acct: AuthAccount)
   {
@@ -24,7 +25,11 @@ transaction(username: String)
 
     // get private capability to user game state for use in post transaction validation
     self.privCap = acct.getCapability<&FlowWords.UserGameState{FlowWords.UserGameStateInterface}>(/private/FlowWordsGameState)
-
+    if(self.privCap.check() == false)
+    { 
+      panic("Private GameState Link invalid")
+    }
+    
     // update user's preferred name, for use on leaderboards
     if self.privCap.borrow()!.GetName() != username
     {
@@ -34,14 +39,22 @@ transaction(username: String)
     }
 
     // force tick the main contract, to update word of the day
-    let gameCapability = getAccount(GAME_DEPLOY_ACCOUNT).getCapability<&{FlowWords.GameInterface}>(/public/Game)
-    gameCapability.borrow()!.GetCurrentGameId()
+    self.gameCapability = getAccount(GAME_DEPLOY_ACCOUNT).getCapability<&{FlowWords.GameInterface}>(/public/Game)
+  }
+
+  execute
+  {
+    // call GetUserGameState on game contract
+    let game = self.gameCapability.borrow() ?? panic("Cannot get Game capability!")
+
+    // get game id and game state
+    game.GetCurrentGameId()
+    log(game.GetUserGameState(userStateCapability: self.privCap))
   }
 
   post
   {
     // check that capabilities have been granted correctly.
-    self.privCap.check(): "Private GameState Link invalid"
     getAccount(self.account).getCapability<&FlowWords.UserGameState{FlowWords.UserGameStatePublicInterface}>(/public/FlowWordsGameState).check(): "Public GameState Link invalid"
   }
 }

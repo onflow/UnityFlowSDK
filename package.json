@@ -1,6 +1,6 @@
 {
   "name": "com.dapperlabs.flowsdk",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "displayName": "Flow SDK",
   "description": "Integrate your Unity app with the Flow blockchain.",
   "unity": "2021.3",
@@ -64,6 +64,11 @@
       "displayName": "Example NFT",
       "description": "An example of minting and reading a simple NFT using the SDK",
       "path": "Samples~/NFTExample"
+    },
+    {
+      "displayName": "NFT Browser",
+      "description": "A sample NFT browser",
+      "path": "Samples~/NFTBrowserExample"
     }
   ]
 }

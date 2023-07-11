@@ -10,8 +10,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "DapperLabs.FlowSDK.BouncyCastle.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "DapperLabs.FlowSDK.BouncyCastle.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

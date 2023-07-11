@@ -8,6 +8,6 @@ namespace DapperLabs.Flow.Sdk.DataObjects
         public string BlockId;
         public List<FlowChunk> Chunks;
         public List<FlowServiceEvent> ServiceEvents;
-		public Exceptions.FlowError Error;
+        public Exceptions.FlowError Error;
     }
 }

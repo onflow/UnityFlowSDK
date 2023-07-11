@@ -1,0 +1,35 @@
+{
+    "name": "DapperLabs.FlowSDK.WalletConnect",
+    "rootNamespace": "DapperLabs.Flow.Sdk.WalletConnect",
+    "references": [
+        "GUID:5a7736b2de016c948b5a0065afe04024",
+        "GUID:c598d26f0f0031848b6356b34bf18fad"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Microsoft.IdentityModel.Abstractions.dll",
+        "Microsoft.IdentityModel.Logging.dll",
+        "Microsoft.IdentityModel.Tokens.dll",
+        "System.Reactive.dll",
+        "System.Threading.Channels.dll",
+        "WalletConnectSharp.Common.dll",
+        "WalletConnectSharp.Core.dll",
+        "WalletConnectSharp.Crypto.dll",
+        "WalletConnectSharp.Events.dll",
+        "WalletConnectSharp.Network.dll",
+        "WalletConnectSharp.Network.Websocket.dll",
+        "WalletConnectSharp.Sign.dll",
+        "WalletConnectSharp.Storage.dll",
+        "Websocket.Client.dll",
+        "zxing.unity.dll",
+        "Newtonsoft.Json.dll",
+        "DapperLabs.FlowSDK.BouncyCastle.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,5 +1,5 @@
-import FlowSDKSampleToken from "./flow-sdk-sample-token.cdc"
-import FlowSDKSampleNFT from "./flow-sdk-sample-nft.cdc"
+import FlowSDKSampleToken from "FlowSDKSampleToken"
+import FlowSDKSampleNFT from "FlowSDKSampleNFT"
 
 // This contract is a learning tool and is not meant to be used in production.
 // See the NFTStorefront contract for a generic marketplace smart contract that 
