@@ -105,6 +105,7 @@ namespace DapperLabs.Flow.Sdk.Cadence
             ["UFix64"] = typeof(Decimal),
             ["Address"] = typeof(String),
             ["String"] = typeof(String),
+            ["Character"] = typeof(char),
             ["Bool"] = typeof(Boolean),
             ["Path"] = typeof(CadencePathValue),
             ["Capability"] = typeof(CadenceCapabilityValue),
@@ -170,6 +171,12 @@ namespace DapperLabs.Flow.Sdk.Cadence
             if (cadence.GetType() == typeof(CadenceString))
             {
                 return System.Convert.ChangeType(cadence.As<CadenceString>().Value, CadenceToCSharpTypeConversions[cadence.Type]) is T ? (T)System.Convert.ChangeType(cadence.As<CadenceString>().Value, CadenceToCSharpTypeConversions[cadence.Type]) : default;
+            }
+
+            //CadenceCharacter conversion
+            if (cadence.GetType() == typeof(CadenceCharacter))
+            {
+                return System.Convert.ChangeType(cadence.As<CadenceCharacter>().Value, CadenceToCSharpTypeConversions[cadence.Type]) is T ? (T)System.Convert.ChangeType(cadence.As<CadenceCharacter>().Value, CadenceToCSharpTypeConversions[cadence.Type]) : default;
             }
 
             //CadenceAddress conversion
@@ -304,39 +311,58 @@ namespace DapperLabs.Flow.Sdk.Cadence
             //Handle CadenceComposite types
             if (cadence.GetType() == typeof(CadenceComposite))
             {
-                CadenceAttribute cadenceAttribute = typeof(T).GetCustomAttribute<CadenceAttribute>();
-
-                //Create an instance of the requested type to populate later
-                T target = (T)Activator.CreateInstance(typeof(T));
-
-                //Iterate through all the fields in the requested type
-                FieldInfo[] targetFields = typeof(T).GetFields();
-                foreach (FieldInfo field in targetFields)
+                if (cadence.Type == "Enum")
                 {
-                    //Use the field's name unless a CadenceAttribute indicates a different name
-                    string name = field.Name;
-                    CadenceAttribute f = field.GetCustomAttribute<CadenceAttribute>();
-                    if (f != null && f.Name != null)
+                    if (!typeof(T).IsEnum)
                     {
-                        name = f.Name;
+                        throw new System.Exception($"Can not convert {cadence.Type} into {typeof(T)}.");
                     }
-
-                    //Iterate through all the fields on the CadenceComposite to find one with a matching name
-                    foreach (CadenceCompositeField cadenceField in cadence.As<CadenceComposite>().Value.Fields)
+                    
+                    string cadenceType = cadence.As<CadenceComposite>().Value.Fields.First(x => x.Name == "rawValue").Value.Type;
+                    Type enumType = CadenceToCSharpTypeConversions[cadenceType];
+                    if (Enum.GetUnderlyingType(typeof(T)) != enumType)
                     {
-                        //Name doesn't match, continue to next field
-                        if (cadenceField.Name != name) continue;
-
-                        //Match found, convert from CadenceBase to C#
-                        MethodInfo method = typeof(Convert).GetMethods().First(m => m.Name == "FromCadence").MakeGenericMethod(field.FieldType);
-                        object value = method.Invoke(null, new[] { cadenceField.Value });
-                        object targetObject = target;
-                        field.SetValue(targetObject, value);
-                        target = (T)targetObject;
+                        throw new System.Exception($"Can not convert enum of base type {enumType} into enum with base type {Enum.GetUnderlyingType(typeof(T))}.");
                     }
+                    string enumValue = cadence.As<CadenceComposite>().Value.Fields.First(x=>x.Name=="rawValue").Value.GetValue();
+                    return (T)Enum.Parse(typeof(T), enumValue);
                 }
+                else
+                {
+                    CadenceAttribute cadenceAttribute = typeof(T).GetCustomAttribute<CadenceAttribute>();
 
-                return target;
+                    //Create an instance of the requested type to populate later
+                    T target = (T)Activator.CreateInstance(typeof(T));
+
+                    //Iterate through all the fields in the requested type
+                    FieldInfo[] targetFields = typeof(T).GetFields();
+                    foreach (FieldInfo field in targetFields)
+                    {
+                        //Use the field's name unless a CadenceAttribute indicates a different name
+                        string name = field.Name;
+                        CadenceAttribute f = field.GetCustomAttribute<CadenceAttribute>();
+                        if (f != null && f.Name != null)
+                        {
+                            name = f.Name;
+                        }
+
+                        //Iterate through all the fields on the CadenceComposite to find one with a matching name
+                        foreach (CadenceCompositeField cadenceField in cadence.As<CadenceComposite>().Value.Fields)
+                        {
+                            //Name doesn't match, continue to next field
+                            if (cadenceField.Name != name) continue;
+
+                            //Match found, convert from CadenceBase to C#
+                            MethodInfo method = typeof(Convert).GetMethods().First(m => m.Name == "FromCadence").MakeGenericMethod(field.FieldType);
+                            object value = method.Invoke(null, new[] { cadenceField.Value });
+                            object targetObject = target;
+                            field.SetValue(targetObject, value);
+                            target = (T)targetObject;
+                        }
+                    }
+
+                    return target;   
+                }
             }
 
             //No other matches found, try and process as a CadenceBase primitive
@@ -381,6 +407,7 @@ namespace DapperLabs.Flow.Sdk.Cadence
             {
                 "Address" => new CadenceAddress($"{source}"),
                 "String" => new CadenceString($"{source}"),
+                "Character" => new CadenceCharacter((char)source),
                 "Bool" => new CadenceBool((bool)source),
                 "Path" => new CadencePath((CadencePathValue)source),
                 "Capability" => new CadenceCapability((CadenceCapabilityValue)source),
@@ -444,6 +471,23 @@ namespace DapperLabs.Flow.Sdk.Cadence
                 List<CadenceBase> tempList = new List<CadenceBase>();
 
                 string extractedType = Regex.Match(destinationType, @"\[(.*?)\]").Groups[1].Value;
+
+                Match fixedSizeArrayMatch = Regex.Match(extractedType, @";\s*(\d+)$");
+                if (fixedSizeArrayMatch.Success)
+                {
+                    // Fixed length array
+                    int arraySize = 0;
+                    if(int.TryParse(fixedSizeArrayMatch.Groups[1].Value, out arraySize) && arraySize == (source as IList).Count)
+                    {
+                        // strip fixed length data from array type for later parsing
+                        extractedType = Regex.Replace(extractedType, @";\s*(\d+)$", "");
+                    }
+                    else
+                    {
+                        throw new System.Exception($"{fieldName} element count does not match parsed fixed array size of {arraySize} in {extractedType}");
+                    }
+                }
+
                 foreach (object element in source as IList)
                 {
                     tempList.Add(ToCadence(element, extractedType));
@@ -505,7 +549,32 @@ namespace DapperLabs.Flow.Sdk.Cadence
             }
 
             //Handle "Struct" types
-            if (destinationType == "Struct" || destinationType == "Enum" ||  destinationType == "Resource" || destinationType== "Event" || destinationType== "Contract")
+            if (destinationType == "Enum")
+            {
+                CadenceComposite cadenceComposite = new CadenceComposite(destinationType);
+                CadenceAttribute structAttribute = (CadenceAttribute)Attribute.GetCustomAttribute(source.GetType(), typeof(CadenceAttribute));
+
+                cadenceComposite.Value = new CadenceCompositeValue
+                {
+                    Type = structAttribute.CadenceType
+                };
+
+                List<CadenceCompositeField> cadenceFields = new List<CadenceCompositeField>();
+
+                KeyValuePair<string, Type> typeConversion = CadenceToCSharpTypeConversions.First(x => x.Value == source.GetType().GetEnumUnderlyingType());
+                
+                cadenceFields.Add(new CadenceCompositeField
+                {
+                    Name = "rawValue",
+                    Value = ToCadencePrimitive(System.Convert.ChangeType(source, typeConversion.Value), typeConversion.Key)
+                });
+
+                cadenceComposite.Value.Fields = cadenceFields;
+                
+                return cadenceComposite;
+            }
+            
+            if (destinationType == "Struct" ||  destinationType == "Resource" || destinationType== "Event" || destinationType== "Contract")
             {
                 if (source == null)
                 {

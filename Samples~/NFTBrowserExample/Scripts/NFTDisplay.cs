@@ -41,44 +41,52 @@ namespace NFTViewerExample
             index = 0;
 
             //Initialize the media count
-            mediaCount.text = $"{index + 1}/{nft.Medias.items.Count}";
+            if (nft.Medias != null)
+            {
+                mediaCount.text = $"{index + 1}/{nft.Medias.items.Count}";
 
-            //See if there are media files to display.  If not, we'll use the NFT Display thumbnail and disable the next and previous buttons
-            if (nft.Medias?.items == null || nft.Medias.items.Count == 0)
+                //See if there are media files to display.  If not, we'll use the NFT Display thumbnail and disable the next and previous buttons
+                if (nft.Medias.items == null || nft.Medias.items.Count == 0)
+                {
+                    previous.gameObject.SetActive(false);
+                    next.gameObject.SetActive(false);
+                    image.texture = FindObjectOfType<NFTViewer>().urlTextures[nft.Display.thumbnail.GetURL()];
+                    return;
+                }
+
+                //If there's only a single media file, we'll disable the navigation buttons and display that file
+                if (nft.Medias.items.Count == 1)
+                {
+                    previous.gameObject.SetActive(false);
+                    next.gameObject.SetActive(false);
+                    UpdateImageTexture();
+                    return;
+                }
+
+                //If we're here, then there are multiple media files.  Enable navigation buttons and display the first media
+                previous.gameObject.SetActive(true);
+                next.gameObject.SetActive(true);
+                UpdateImageTexture();
+
+                //Get a reference to the NFTViewer component in the scene
+                NFTViewer nftViewer = FindObjectOfType<NFTViewer>();
+
+                //Start preloading all images
+                foreach (Media mediasItem in nft.Medias.items)
+                {
+                    //Only preload images, videos will be streamed
+                    if (mediasItem.mediaType.Contains("image"))
+                    {
+                        StartCoroutine(nftViewer.GetTexture(mediasItem.file.GetURL()));
+                    }
+                }
+            }
+            else
             {
                 previous.gameObject.SetActive(false);
                 next.gameObject.SetActive(false);
                 image.texture = FindObjectOfType<NFTViewer>().urlTextures[nft.Display.thumbnail.GetURL()];
-                return;
             }
-
-            //If there's only a single media file, we'll disable the navigation buttons and display that file
-            if (nft.Medias.items.Count == 1)
-            {
-                previous.gameObject.SetActive(false);
-                next.gameObject.SetActive(false);
-                UpdateImageTexture();
-                return;
-            }
-
-            //If we're here, then there are multiple media files.  Enable navigation buttons and display the first media
-            previous.gameObject.SetActive(true);
-            next.gameObject.SetActive(true);
-            UpdateImageTexture();
-
-            //Get a reference to the NFTViewer component in the scene
-            NFTViewer nftViewer = FindObjectOfType<NFTViewer>();
-
-            //Start preloading all images
-            foreach (Media mediasItem in nft.Medias.items)
-            {
-                //Only preload images, videos will be streamed
-                if (mediasItem.mediaType.Contains("image"))
-                {
-                    StartCoroutine(nftViewer.GetTexture(mediasItem.file.GetURL()));
-                }
-            }
-
         }
 
         //Updates the Image texture that is displayed

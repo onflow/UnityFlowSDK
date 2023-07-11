@@ -12,6 +12,7 @@ using WalletConnectSharp.Sign;
 using WalletConnectSharp.Sign.Models;
 using WalletConnectSharp.Sign.Models.Engine;
 using WalletConnectSharp.Core.Models.Pairing;
+using DapperLabs.Flow.Sdk.Cadence;
 
 #if UNITY_ANDROID || UNITY_IOS
 using UnityEngine.Networking;
@@ -119,7 +120,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             {
                 // Load default QR Code Dialog prefab
                 Debug.Log("<b>QrCodeDialogPrefab</b> not assigned in WalletConnectConfig, using default dialog prefab.");
-                prefab = Resources.Load("QRCodeDialogPrefab");
+                prefab = Resources.Load("QRCodeDialogPrefab_WalletConnect");
             }
 
             // Instantiate the prefab which shows a list of dev accounts to select from
@@ -645,6 +646,11 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             }
 
             return reqParams;
+        }
+
+        public async Task<FlowTransactionResponse> Mutate(string script, List<CadenceBase> arguments = null)
+        {
+            return await Transactions.InternalSubmit(script, arguments);
         }
     }
 }

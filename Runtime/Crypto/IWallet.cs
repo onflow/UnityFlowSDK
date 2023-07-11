@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.DataObjects;
 
 namespace DapperLabs.Flow.Sdk.Crypto
@@ -55,6 +57,8 @@ namespace DapperLabs.Flow.Sdk.Crypto
         /// </summary>
         /// <returns>The FlowAccount of the authenticated user.</returns>
         public SdkAccount GetAuthenticatedAccount();
+
+        public Task<FlowTransactionResponse> Mutate(string script, List<CadenceBase> arguments = null);
     }
 
     /// <summary>

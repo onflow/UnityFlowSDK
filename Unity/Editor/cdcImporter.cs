@@ -18,15 +18,15 @@ namespace DapperLabs.Flow.Sdk.Unity
         {
             string text = File.ReadAllText(ctx.assetPath);
             CadenceAsset subAsset = null;
-            if(Regex.IsMatch(text, @"^\s*pub\s+fun\s+main\s*\(", RegexOptions.Multiline))
+            if(Regex.IsMatch(text, @"^\s*(pub.*|access.*\S)\s*fun\s*main\s*\(.*\)", RegexOptions.Multiline))
             {
                 subAsset = ScriptableObject.CreateInstance<CadenceScriptAsset>();
             }
-            else if (Regex.IsMatch(text, @"^\s*(pub.*|access.*)*\s*contract\s*\(*.*{", RegexOptions.Multiline))
+            else if (Regex.IsMatch(text, @"^\s*(pub.*|access.*\S)\s*contract\s*.*\s*{", RegexOptions.Multiline))
             {
                 subAsset = ScriptableObject.CreateInstance<CadenceContractAsset>();
             }
-            else if (Regex.IsMatch(text, @"\s*(pub.*|access.*)*\s*transaction\s*\(*.*{", RegexOptions.Singleline))
+            else if (Regex.IsMatch(text, @"^\s*transaction\s*.*\s*\S*{", RegexOptions.Multiline))
             {
                 subAsset = ScriptableObject.CreateInstance<CadenceTransactionAsset>();
             }

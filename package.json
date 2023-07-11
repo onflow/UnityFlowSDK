@@ -1,6 +1,6 @@
 {
   "name": "com.dapperlabs.flowsdk",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "displayName": "Flow SDK",
   "description": "Integrate your Unity app with the Flow blockchain.",
   "unity": "2021.3",

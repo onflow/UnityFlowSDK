@@ -51,6 +51,8 @@ namespace DapperLabs.Flow.Sdk.Cadence
             {
                 case "String":
                     return new CadenceString();
+                case "Character":
+                    return new CadenceCharacter();
                 case "Array":
                     return new CadenceArray();
                 case "Bool":

@@ -1006,7 +1006,7 @@ GameObject:
   - component: {fileID: 9122264532050889161}
   - component: {fileID: 5900898677851843494}
   m_Layer: 5
-  m_Name: QRCodeDialogPrefab
+  m_Name: QRCodeDialogPrefab_WalletConnect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,0 +1,20 @@
+{
+    "name": "DapperLabs.FlowSDK.Niftory",
+    "rootNamespace": "DapperLabs.Flow.Sdk.Niftory",
+    "references": [
+        "GUID:5a7736b2de016c948b5a0065afe04024"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "zxing.unity.dll",
+        "Flow.Net.Sdk.Core.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

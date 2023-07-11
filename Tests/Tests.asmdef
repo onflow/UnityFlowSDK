@@ -1,0 +1,20 @@
+{
+    "name": "Tests",
+    "rootNamespace": "DapperLabs.Flow.Sdk.Tests",
+    "references": [
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:5a7736b2de016c948b5a0065afe04024",
+        "GUID:0cc2fb2184063f24fb18f01a15ff1750",
+        "GUID:1ba7e3104bb1f824888268afa3835b62",
+        "GUID:490dca04981578140b059a175e72a800"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

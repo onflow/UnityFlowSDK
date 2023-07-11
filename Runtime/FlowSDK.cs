@@ -27,7 +27,7 @@ namespace DapperLabs.Flow.Sdk
     /// </summary>
     public class FlowSDK
     {
-        internal static IWallet walletProvider;
+        internal static IWallet walletProvider = null;
 
         /// <summary>
         /// Initializes the Flow SDK. 

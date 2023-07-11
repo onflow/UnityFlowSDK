@@ -115,8 +115,6 @@ namespace DapperLabs.Flow.Sdk.Unity
             }
             
             CheckForFlowExecutable();
-
-            FlowSDK.RegisterWalletProvider(new DevWalletProvider());
         }
 
         private void OnDestroy()
@@ -137,6 +135,11 @@ namespace DapperLabs.Flow.Sdk.Unity
             {
                 instance = GetWindow<FlowControlWindow>();
                 CreateGUI();
+            }
+
+            if (Application.isPlaying == false && FlowSDK.GetWalletProvider() is not DevWalletProvider)
+            {
+                FlowSDK.RegisterWalletProvider(new DevWalletProvider());
             }
 
             bool mouseDown = Event.current.type == EventType.MouseDown;
@@ -306,7 +309,7 @@ namespace DapperLabs.Flow.Sdk.Unity
 
                     EditorGUILayout.BeginHorizontal();
                     {
-                        GUI.enabled = (toolsContractName != "" && toolsContractScript != null);
+                        GUI.enabled = (toolsContractName != "" && toolsContractScript != null) && Application.isPlaying == false;
                         if (GUILayout.Button("Deploy Contract", GUILayout.Width(150)))
                         {
                             toolsContractResult = null;
@@ -444,7 +447,7 @@ namespace DapperLabs.Flow.Sdk.Unity
 
                     EditorGUILayout.BeginHorizontal();
                     {
-                        GUI.enabled = (toolsTransactionScript != null);
+                        GUI.enabled = (toolsTransactionScript != null) && Application.isPlaying == false;
                         if (GUILayout.Button("Execute Transaction", GUILayout.Width(150)))
                         {
                             string name = FlowControl.Data.Accounts.ToArray()[toolsTransactionAccountIndex].Name;
@@ -596,6 +599,8 @@ namespace DapperLabs.Flow.Sdk.Unity
 
                     EditorGUILayout.BeginHorizontal();
                     {
+                        GUI.enabled = Application.isPlaying == false;
+
                         if (GUILayout.Button("Create", GUILayout.Width(100)))
                         {
                             FlowControl.Data.Accounts[toolsCreateAccountPayerIndex].GatewayObject.Init(FlowControl.Data.Accounts[toolsCreateAccountPayerIndex].AccountConfig);
@@ -603,6 +608,8 @@ namespace DapperLabs.Flow.Sdk.Unity
                             newAccountTask = CommonTransactions.CreateAccount(toolsCreateAccountNewAccountName);
                         }
                         GUILayout.FlexibleSpace();
+
+                        GUI.enabled = true;
                     }
                     GUILayout.EndHorizontal();
 

@@ -6,6 +6,9 @@ using DapperLabs.Flow.Sdk.Crypto;
 using DapperLabs.Flow.Sdk.DataObjects;
 using System;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using DapperLabs.Flow.Sdk.Cadence;
+using DapperLabs.Flow.Sdk.Exceptions;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -83,8 +86,25 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             }
 
             // Get the script component and initialize it
+            bool dialogComplete = false;
+            string address = "";
             AccountDialog accDialogScript = accountDialog.GetComponentInChildren<AccountDialog>();
-            accDialogScript.Init(FlowControl.GatewayCache.Values.ToArray()[0], OnAuthenticateSuccess, OnAuthenticateFailed);
+            accDialogScript.Init(FlowControl.GatewayCache.Values.ToArray()[0], (string value) => { address = value; dialogComplete = true; }, () => { dialogComplete = true; });
+
+            // wait for user to select wallet
+            while (dialogComplete == false && accountDialog != null)
+            {
+                await Task.Delay(250);
+            }
+
+            if (address != "")
+            {
+                OnAuthenticateSuccess(address);
+            }
+            else
+            {
+                OnAuthenticateFailed();
+            }
         }
 
         private void OnAuthenticateSuccess(string authAccount)
@@ -240,6 +260,11 @@ namespace DapperLabs.Flow.Sdk.DevWallet
             }
 
             return authorizedAccount;
+        }
+
+        public async Task<FlowTransactionResponse> Mutate(string script, List<CadenceBase> arguments = null)
+        {
+            return await Transactions.InternalSubmit(script, arguments);
         }
     }
 }
