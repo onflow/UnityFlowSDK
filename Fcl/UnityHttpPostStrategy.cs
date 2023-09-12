@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DapperLabs.Flow.Sdk.Unity;
 using Fcl.Net.Core;
 using Fcl.Net.Core.Interfaces;
 using Fcl.Net.Core.Models;
@@ -20,25 +21,33 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
         public override async Task<T> PollAsync<T>(T response)
         {
-            if (response is FclAuthResponse fclAuthResponse)
+            try
             {
-                if (fclAuthResponse.Local == null)
-                    throw new Exception("Local was null.");
-
-                var url = FetchService.BuildUrl(fclAuthResponse.Local);
-                Debug.Log($"url: {url.AbsoluteUri}");
-
-                UnityThreadExecutor.ExecuteInUpdate(() =>
+                if (response is FclAuthResponse fclAuthResponse)
                 {
-                    Application.OpenURL(url.AbsoluteUri);
-                });
+                    if (fclAuthResponse.Local == null)
+                    {
+                        throw new Exception("Fcl: HttpPostStrategy: fclAuthResponse.Local was null.");
+                    }
 
-                await Poller(fclAuthResponse);
-                Debug.Log("FetchAndReadResponseAsync");
-                return await FetchService.FetchAndReadResponseAsync<T>(fclAuthResponse.Updates ?? fclAuthResponse.AuthorizationUpdates, httpMethod: HttpMethod.Get).ConfigureAwait(false);
+                    var url = FetchService.BuildUrl(fclAuthResponse.Local);
+
+                    UnityThreadExecutor.ExecuteInUpdate(() =>
+                    {
+                        Application.OpenURL(url.AbsoluteUri);
+                    });
+
+                    await Poller(fclAuthResponse);
+                    
+                    return await FetchService.FetchAndReadResponseAsync<T>(fclAuthResponse.Updates ?? fclAuthResponse.AuthorizationUpdates, httpMethod: HttpMethod.Get).ConfigureAwait(false);
+                }
+
+                throw new Exception("Fcl: HttpPostStrategy: response type is not FclAuthResponse");
             }
-
-            return response;
+            catch (Exception ex)
+            {
+                throw new Exception($"Fcl: HttpPostStrategy: {ex.Message}", ex);
+            }
         }
 
         private async Task<bool> Poller(FclAuthResponse fclAuthResponse)
@@ -49,20 +58,27 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
             while (true)
             {
-                Debug.Log("Polling...");
-                var pollingResponse = await FetchService.FetchAndReadResponseAsync<FclAuthResponse>(fclAuthResponse.Updates ?? fclAuthResponse.AuthorizationUpdates, httpMethod: HttpMethod.Get).ConfigureAwait(false);
-
-                if (pollingResponse.Status == ResponseStatus.Approved || pollingResponse.Status == ResponseStatus.Declined)
+                try
                 {
-                    Debug.Log($"Status is {pollingResponse.Status}");
-                    //await RedirectToApp();
-                    return true;
+                    var pollingResponse = await FetchService.FetchAndReadResponseAsync<FclAuthResponse>(fclAuthResponse.Updates ?? fclAuthResponse.AuthorizationUpdates, httpMethod: HttpMethod.Get).ConfigureAwait(false);
+
+                    if (pollingResponse.Status == ResponseStatus.Approved || pollingResponse.Status == ResponseStatus.Declined)
+                    {
+                        Debug.Log($"Fcl: HttpPostStrategy: Status is {pollingResponse.Status}");
+                        return true;
+                    }
+
+                    if (DateTime.UtcNow.Subtract(startTime).TotalMilliseconds > timeoutMs)
+                    {
+                        throw new Exception("Fcl: HttpPostStrategy: Timed out polling.");
+                    }
+
+                    await Task.Delay(delayMs).ConfigureAwait(false);
                 }
-
-                if (DateTime.UtcNow.Subtract(startTime).TotalMilliseconds > timeoutMs)
-                    throw new Exception("Timed out polling.");
-
-                await Task.Delay(delayMs).ConfigureAwait(false);
+                catch (Exception ex)
+                {
+                    throw new Exception($"Fcl: HttpPostStrategy: {ex.Message}", ex);
+                }
             }
         }
     }

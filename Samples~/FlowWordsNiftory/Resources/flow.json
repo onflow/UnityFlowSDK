@@ -1,0 +1,39 @@
+{
+	"emulators": {
+		"default": {
+			"port": 3569,
+			"serviceAccount": "emulator-account"
+		}
+	},
+	"contracts": {
+		"FlowWords": "./contracts/game-contract.cdc"
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"key": "2177ec179db199035ac3708fcc0d105edfc3e0d7bdaeee6602bcc29ccf80c1b8"
+		},
+		"user1": {
+			"address": "01cf0e2f2f715450",
+			"key": "d841c856b1dc687b6186fcb55faebb1dd47166b5ddb71f940cbd9853bd50f335"
+		},
+		"user2": {
+			"address": "179b6b1cb6755e31",
+			"key": "120a675ac81a81f530d8e04ea510f7159b25549b232941a186601cf4ce4c8605"
+		},
+		"admin1": {
+			"address": "f3fcd2c1a78f5eee",
+			"key": "0b62fbaa2249589faae534bf2cb18f233145e07b04b310d764360f3e2f095cad"
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"admin1": ["FlowWords"]
+		}
+	}
+}

@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UnityEngine;
 using Fcl.Net.Core;
 using Fcl.Net.Core.Interfaces;
 using Fcl.Net.Core.Models;
@@ -12,6 +12,11 @@ using WalletConnectSharp.Network.Models;
 using WalletConnectSharp.Sign;
 using WalletConnectSharp.Sign.Models;
 using WalletConnectSharp.Sign.Models.Engine;
+using UnityEngine;
+
+#if UNITY_ANDROID || UNITY_IOS
+using UnityEngine.Networking;
+#endif
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
@@ -62,12 +67,11 @@ namespace DapperLabs.Flow.Sdk.Fcl
             _config = config;
         }
 
-        async Task<T> IStrategy.ExecuteAsync<T>(FclService service, FclServiceConfig config = null, object data = null, HttpMethod httpMethod = null)
+        async Task<T> IStrategy.ExecuteAsync<T>(FclService service, FclServiceConfig config, object data, HttpMethod httpMethod)
         {
-            Debug.Log("UnityWalletConnectStrategy ExecuteAsync");
-
             if (service.Endpoint == "flow_authn")
             {
+#if !UNITY_ANDROID && !UNITY_IOS
                 // Desktop - Show a QR Code to scan
                 // Try to use user defined QR Code prefab
                 UnityEngine.Object prefab = _config.QrCodeDialogPrefab as UnityEngine.Object;
@@ -75,7 +79,7 @@ namespace DapperLabs.Flow.Sdk.Fcl
                 if (prefab == null)
                 {
                     // Load default QR Code Dialog prefab
-                    Debug.Log("<b>QrCodeDialogPrefab</b> not assigned in WalletConnectConfig, using default dialog prefab.");
+                    Debug.Log("Fcl: <b>QrCodeDialogPrefab</b> not assigned in WalletConnectConfig, using default dialog prefab.");
                     prefab = Resources.Load("QRCodeDialogPrefab_FCL");
                 }
 
@@ -84,120 +88,149 @@ namespace DapperLabs.Flow.Sdk.Fcl
                 {
                     _qrDialog = UnityEngine.Object.Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
                 }
+#endif
 
                 if (_client == null)
                 {
-                    var options = new SignClientOptions()
+                    try
                     {
-                        ProjectId = _config.ProjectId,
-                        Metadata = new Metadata()
+                        var options = new SignClientOptions()
                         {
-                            Description = _config.ProjectDescription,
-                            Icons = new[] { _config.ProjectIconUrl },
-                            Name = _config.ProjectName,
-                            Url = _config.ProjectUrl,
-                        },
-                        DataPath = $"{Application.persistentDataPath}/wc/store.json"
-                    };
+                            ProjectId = _config.ProjectId,
+                            Metadata = new Metadata()
+                            {
+                                Description = _config.ProjectDescription,
+                                Icons = new[] { _config.ProjectIconUrl },
+                                Name = _config.ProjectName,
+                                Url = _config.ProjectUrl,
+                            },
+                            DataPath = $"{Application.persistentDataPath}/wc/store.json"
+                        };
 
-                    float timeOut = 10.0f;
-                    Task<WalletConnectSignClient> task = WalletConnectSignClient.Init(options);
+                        float timeOut = 10.0f;
+                        Task<WalletConnectSignClient> task = WalletConnectSignClient.Init(options);
 
-                    while (task.IsCompleted == false && timeOut > 0.0f)
-                    {
-                        await Task.Delay(500);
-                        timeOut -= 0.5f;
-                    }
-
-                    if (timeOut <= 0.0f || task.IsFaulted)
-                    {
-                        if (_qrDialog != null)
+                        while (task.IsCompleted == false && timeOut > 0.0f)
                         {
-                            UnityEngine.Object.Destroy(_qrDialog);
-                            _qrDialog = null;
+                            await Task.Delay(500);
+                            timeOut -= 0.5f;
                         }
 
-                        if (task.IsFaulted)
+                        if (timeOut <= 0.0f || task.IsFaulted)
                         {
-                            throw new System.Exception("Fcl UnityWalletConnectStrategy: Exception triggered while initializing WC.");
+                            if (_qrDialog != null)
+                            {
+                                UnityEngine.Object.Destroy(_qrDialog);
+                                _qrDialog = null;
+                            }
+
+                            if (task.IsFaulted)
+                            {
+                                throw new Exception("Fcl: WalletConnectStrategy: Exception triggered while initializing WC.", task.Exception);
+                            }
+
+                            throw new Exception("Fcl: WalletConnectStrategy: Authentication initialization timed out");
                         }
 
-                        throw new System.Exception("Fcl UnityWalletConnectStrategy: Authentication initialization timed out");
+                        _client = task.Result;
                     }
-
-                    _client = task.Result;
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Fcl: WalletConnectStrategy: Exception thrown while initializing Wallet Connect Sign Client.", ex);
+                    }
                 }
 
                 if (_connectedData == null)
                 {
-                    ConnectOptions connectOptions = new ConnectOptions()
+                    try
                     {
-                        RequiredNamespaces = new RequiredNamespaces()
-                    {
+                        ConnectOptions connectOptions = new ConnectOptions()
                         {
-                            "flow", new RequiredNamespace()
+                            RequiredNamespaces = new RequiredNamespaces()
                             {
-                                Methods = new[]
                                 {
-                                    "flow_authn",
-                                    "flow_authz",
-                                    "flow_user_sign",
-                                    "flow_pre_authz"
-                                },
-                                Chains = new[]
-                                {
-                                    "flow:testnet"
-                                },
-                                Events = new[]
-                                {
-                                    "chainChanged", "accountsChanged"
+                                    "flow", new RequiredNamespace()
+                                    {
+                                        Methods = new[]
+                                        {
+                                            "flow_authn",
+                                            "flow_authz",
+                                            "flow_user_sign",
+                                            "flow_pre_authz"
+                                        },
+                                        Chains = new[]
+                                        {
+                                            "flow:testnet"
+                                        },
+                                        Events = new[]
+                                        {
+                                            "chainChanged", "accountsChanged"
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                    };
+                        };
 
-                    float timeOut = 10.0f;
-                    Task<ConnectedData> task = _client.Connect(connectOptions);
+                        float timeOut = 10.0f;
+                        Task<ConnectedData> task = _client.Connect(connectOptions);
 
-                    while (task.IsCompleted == false && timeOut > 0.0f)
-                    {
-                        await Task.Delay(500);
-                        timeOut -= 0.5f;
-                    }
-
-                    if (timeOut <= 0.0f || task.IsFaulted)
-                    {
-                        if (_qrDialog != null)
+                        while (task.IsCompleted == false && timeOut > 0.0f)
                         {
-                            UnityEngine.Object.Destroy(_qrDialog);
-                            _qrDialog = null;
+                            await Task.Delay(500);
+                            timeOut -= 0.5f;
                         }
 
-                        if (task.IsFaulted)
+                        if (timeOut <= 0.0f || task.IsFaulted)
                         {
-                            throw new System.Exception("Fcl UnityWalletConnectStrategy: Exception triggered while connecting.");
+                            if (_qrDialog != null)
+                            {
+                                UnityEngine.Object.Destroy(_qrDialog);
+                                _qrDialog = null;
+                            }
+
+                            if (task.IsFaulted)
+                            {
+                                throw new Exception("Fcl: WalletConnectStrategy: Exception triggered while connecting.", task.Exception);
+                            }
+
+                            throw new Exception("Fcl: WalletConnectStrategy: Authentication connection timed out");
                         }
 
-                        throw new System.Exception("Fcl UnityWalletConnectStrategy: Authentication connection timed out");
+                        _connectedData = task.Result;
                     }
-
-                    _connectedData = task.Result;
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Fcl: WalletConnectStrategy: Exception thrown during WC Connect.", ex);
+                    }
                 }
 
-                Debug.Log($"Wallet Connect: connection uri is {_connectedData.Uri}");
+                Debug.Log($"Fcl: Wallet Connect: connection uri is {_connectedData.Uri}");
 
+#if UNITY_ANDROID || UNITY_IOS
+
+                // Mobile - Deep link to a mobile wallet app
+                try
+                {
+                    string urlEncoded = UnityWebRequest.EscapeURL(_connectedData.Uri);
+                    string url = $"{service.Uid}?uri={urlEncoded}";
+                    Debug.Log($"Fcl: deeplink url: {url}");
+                    Application.OpenURL(url);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Fcl: WalletConnectStrategy: Exception thrown deep linking to wallet app.", ex);
+                }
+#else
                 // Get the script component and initialize it
                 QRCodeDialog qrDialogScript = _qrDialog.GetComponentInChildren<QRCodeDialog>();
 
                 if (qrDialogScript == null)
                 {
-                    throw new System.Exception($"Fcl UnityWalletConnectStrategy: <b>QrCodeDialog</b> component missing on {prefab.name}. Unable to render QR code.");
+                    throw new Exception($"Fcl: WalletConnectStrategy: <b>QrCodeDialog</b> component missing on {prefab.name}. Unable to render QR code.");
                 }
 
                 bool initSuccess = qrDialogScript.Init(_connectedData.Uri, () =>
                 {
-                    Debug.Log("Dialog closed, stopping session connection.");
                     _killSessionTask = true;
                 });
 
@@ -205,10 +238,11 @@ namespace DapperLabs.Flow.Sdk.Fcl
                 {
                     UnityEngine.Object.Destroy(_qrDialog);
                     _qrDialog = null;
-                    throw new System.Exception("Fcl UnityWalletConnectStrategy: qrDialogScript Init failed.");
+                    throw new Exception("Fcl: WalletConnectStrategy: qrDialogScript Init failed.");
                 }
+#endif
 
-                Debug.Log("Waiting for approval...");
+                Debug.Log("Fcl: Waiting for user to approve connection in wallet...");
 
                 if (_connectedData.Approval.Status != TaskStatus.RanToCompletion)
                 {
@@ -228,13 +262,15 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
                     if (sessionTask.IsFaulted)
                     {
-                        throw new System.Exception($"Fcl WalletConnectStrategy: Exception occurred waiting for connection approval.", sessionTask.Exception);
+                        throw new Exception($"Fcl: WalletConnectStrategy: Exception occurred waiting for connection approval.", sessionTask.Exception);
                     }
                     _session = sessionTask.Result;
                 }
 
+#if !UNITY_ANDROID && !UNITY_IOS
                 UnityEngine.Object.Destroy(_qrDialog);
                 _qrDialog = null;
+#endif
             }
 
             var requestData = new Dictionary<string, object>();
@@ -255,12 +291,12 @@ namespace DapperLabs.Flow.Sdk.Fcl
                     "flow_authz" => await _client.Request<AuthzRequest, FclAuthResponse>(_session.Topic, new AuthzRequest(req)),
                     "flow_user_sign" => await _client.Request<UserSignRequest, FclAuthResponse>(_session.Topic, new UserSignRequest(req)),
                     "flow_pre_authz" => await _client.Request<PreAuthzRequest, FclAuthResponse>(_session.Topic, new PreAuthzRequest(req)),
-                    _ => throw new System.Exception($"Fcl WalletConnectStrategy: Request not supported"),
+                    _ => throw new Exception($"Fcl: WalletConnectStrategy: Request method '{service.Endpoint}' not supported."),
                 } as T;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                throw new System.Exception($"Fcl WalletConnectStrategy: Sending Request Failed.", ex);
+                throw new Exception($"Fcl: WalletConnectStrategy: Exception thrown sending WC Request.", ex);
             }
         }
     }

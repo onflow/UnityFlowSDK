@@ -42,13 +42,13 @@ namespace DapperLabs.Flow.Sdk.Fcl
         {
             if (QrCodeObject == null)
             {
-                Debug.LogError("<b>QrCodeObject</b> component reference not assigned on QrCodeDialog. Unable to render QR code.", this);
+                Debug.LogError("Fcl: <b>QrCodeObject</b> component reference not assigned on QrCodeDialog. Unable to render QR code.", this);
                 return false;
             }
 
             if (UriCopyButtonText == null)
             {
-                Debug.LogError("<b>UriCopyButtonText</b> component reference not assigned on QrCodeDialog. Unable to render URI.", this);
+                Debug.LogError("Fcl: <b>UriCopyButtonText</b> component reference not assigned on QrCodeDialog. Unable to render URI.", this);
                 return false;
             }
 

@@ -1,21 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Crypto;
 using DapperLabs.Flow.Sdk.DataObjects;
 using DapperLabs.Flow.Sdk.Exceptions;
+using DapperLabs.Flow.Sdk.Unity;
 using Fcl.Net.Core;
 using Fcl.Net.Core.Models;
 using Fcl.Net.Core.Service;
 using Fcl.Net.Core.Interfaces;
 using Fcl.Net.Core.Service.Strategies;
 using Flow.Net.Sdk.Client.Http;
-using Flow.Net.Sdk.Core.Cadence;
 using Flow.Net.Sdk.Core.Client;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.Fcl
@@ -32,15 +31,14 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
             try
             {
-                Debug.Log("Calling DiscoveryServicesAsync...");
                 var serviceProviders = await fcl.DiscoveryServicesAsync();
 
-                Debug.Log($"serviceProviders returned: {serviceProviders.Count}");
+                Debug.Log($"Fcl: discovery service returned {serviceProviders.Count} providers.");
                 var providers = new List<FclWalletProvider>();
 
                 foreach (FclService service in serviceProviders)
                 {
-                    if (service.Method != FclServiceMethod.Data)
+                    if (service.Method != FclServiceMethod.Data && service.Provider.Name != "WalletConnect")
                     {
                         Debug.Log($"{service.Provider.Name}. Method: {service.Method}. Endpoint: {service.Endpoint}. uid: {service.Uid}");
 
@@ -49,24 +47,23 @@ namespace DapperLabs.Flow.Sdk.Fcl
                             Name = service.Provider.Name,
                             Logo = service.Provider.Icon,
                             Method = service.Method,
-                            Endpoint = service.Endpoint
+                            Endpoint = service.Endpoint,
+                            Uid = service.Uid
                         });
                     }
                 }
 
                 WalletSelectDialog walletSelectDialogScript = walletSelectDialog.GetComponentInChildren<WalletSelectDialog>();
 
-                bool initSuccess = walletSelectDialogScript.Init("Select Wallet", providers, async (FclServiceMethod method, string endpoint) =>
+                bool initSuccess = walletSelectDialogScript.Init("Select Wallet", providers, async (FclServiceMethod method, string endpoint, string uid) =>
                 {
-                    Debug.Log($"endpoint: {endpoint}");
-                    Debug.Log($"method: {method}");
-
                     try
                     {
                         await fcl.AuthenticateAsync(new FclService
                         {
                             Endpoint = endpoint,
-                            Method = method
+                            Method = method,
+                            Uid = uid
                         });
 
                         if (fcl.User.LoggedIn)
@@ -80,7 +77,7 @@ namespace DapperLabs.Flow.Sdk.Fcl
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError($"Fcl: Authenticate - {ex.Message}.");
+                        throw new Exception($"Fcl: Authenticate - {ex.Message}.", ex);
                     }
                     finally
                     {
@@ -91,7 +88,7 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Fcl: Authenticate - {ex.Message}.");
+                throw new Exception($"Fcl: Authenticate - {ex.Message}.", ex);
             }
         }
 
@@ -110,73 +107,88 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
         public void Init(WalletConfig config)
         {
-            if (config == null)
+            try
             {
-                throw new Exception("Fcl: Init() - must pass a valid FclConfig object.");
+                if (config == null)
+                {
+                    throw new Exception("Fcl: Init() - must pass a valid FclConfig object.");
+                }
+
+                FclConfig fclConfig = null;
+
+                if (config is FclConfig)
+                {
+                    fclConfig = config as FclConfig;
+                }
+                else
+                {
+                    throw new Exception("Fcl: Init() - Incorrect config type given. Config type must be FclConfig.");
+                }
+
+                var appInfo = new FclAppInfo
+                {
+                    Icon = new Uri(fclConfig.IconUri),
+                    Title = fclConfig.Title
+                };
+
+                var walletDiscoveryConfig = new FclWalletDiscovery
+                {
+                    Authn = new Uri("https://fcl-discovery.onflow.org/api/testnet/authn")
+                };
+
+                global::Fcl.Net.Core.Config.FclConfig cfg = new global::Fcl.Net.Core.Config.FclConfig(walletDiscoveryConfig, appInfo, "", ChainId.Testnet);
+
+                var sdkOptions = new FlowClientOptions
+                {
+                    ServerUrl = ServerUrl.TestnetHost
+                };
+
+                var fetchServiceConfig = new FetchServiceConfig
+                {
+                    Location = fclConfig.Location
+                };
+
+                var fetchService = new FetchService(_httpClient, fetchServiceConfig);
+
+                var wcConfig = new WalletConnectConfig
+                {
+                    ProjectDescription = fclConfig.Description,
+                    ProjectIconUrl = fclConfig.IconUri,
+                    ProjectId = fclConfig.WalletConnectProjectId,
+                    ProjectName = fclConfig.Title,
+                    ProjectUrl = fclConfig.Url,
+                    QrCodeDialogPrefab = fclConfig.WalletConnectQrCodeDialogPrefab,
+                    WalletSelectDialogPrefab = null
+                };
+
+                // strategies
+#if UNITY_IOS || UNITY_ANDROID
+                var strategies = new Dictionary<FclServiceMethod, IStrategy>
+                {
+                    { FclServiceMethod.WcRpc, new UnityWalletConnectStrategy(fetchService, wcConfig) },
+                    { FclServiceMethod.Data, new DataStrategy(fetchService) }
+                };
+#else
+                var strategies = new Dictionary<FclServiceMethod, IStrategy>
+                {
+                    { FclServiceMethod.HttpPost, new UnityHttpPostStrategy(fetchService, null) },
+                    { FclServiceMethod.WcRpc, new UnityWalletConnectStrategy(fetchService, wcConfig) },
+                    { FclServiceMethod.Data, new DataStrategy(fetchService) }
+                };
+#endif
+
+                fcl = new global::Fcl.Net.Core.Fcl(
+                    cfg,
+                    new FlowHttpClient(_httpClient, sdkOptions),
+                    new UnityPlatform(),
+                    strategies);
+
+                UnityThreadExecutor.Init();
             }
-
-            FclConfig fclConfig = null;
-
-            if (config is FclConfig)
+            catch (Exception ex)
             {
-                fclConfig = config as FclConfig;
+                throw new Exception("Fcl: Init() - failed to initialize FCL.NET.", ex);
             }
-            else
-            {
-                throw new Exception("Fcl: Init() - Incorrect config type given. Config type must be FclConfig.");
-            }
-
-            var appInfo = new FclAppInfo
-            {
-                Icon = new Uri(fclConfig.IconUri),
-                Title = fclConfig.Title
-            };
-
-            var walletDiscoveryConfig = new FclWalletDiscovery
-            {
-                Authn = new Uri("https://fcl-discovery.onflow.org/api/testnet/authn")
-            };
-
-            global::Fcl.Net.Core.Config.FclConfig cfg = new global::Fcl.Net.Core.Config.FclConfig(walletDiscoveryConfig, appInfo, "", ChainId.Testnet);
-
-            var sdkOptions = new FlowClientOptions
-            {
-                ServerUrl = ServerUrl.TestnetHost
-            };
-
-            var fetchServiceConfig = new FetchServiceConfig
-            {
-                Location = fclConfig.Location
-            };
-
-            var fetchService = new FetchService(_httpClient, fetchServiceConfig);
-
-            var wcConfig = new WalletConnectConfig
-            {
-                ProjectDescription = fclConfig.Description,
-                ProjectIconUrl = fclConfig.IconUri,
-                ProjectId = fclConfig.WalletConnectProjectId,
-                ProjectName = fclConfig.Title,
-                ProjectUrl = fclConfig.Url,
-                QrCodeDialogPrefab = fclConfig.WalletConnectQrCodeDialogPrefab,
-                WalletSelectDialogPrefab = null
-            };
-
-            // strategies
-            var strategies = new Dictionary<FclServiceMethod, IStrategy>
-            {
-                { FclServiceMethod.HttpPost, new UnityHttpPostStrategy(fetchService, null) },
-                { FclServiceMethod.WcRpc, new UnityWalletConnectStrategy(fetchService, wcConfig) },
-                { FclServiceMethod.Data, new DataStrategy(fetchService) }
-            };
-
-            fcl = new global::Fcl.Net.Core.Fcl(
-                cfg,
-                new FlowHttpClient(_httpClient, sdkOptions),
-                new UnityPlatform(),
-                strategies);
-
-            UnityThreadExecutor.Init();
         }
 
         public bool IsAuthenticated()
@@ -186,13 +198,20 @@ namespace DapperLabs.Flow.Sdk.Fcl
 
         public async Task<byte[]> SignTransactionEnvelope(FlowTransaction txn)
         {
-            byte[] canonicalAuthorizationEnvelope = Rlp.EncodedCanonicalAuthorizationEnvelope(txn);
-            byte[] message = DomainTag.AddTransactionDomainTag(canonicalAuthorizationEnvelope);
+            try
+            {
+                byte[] canonicalAuthorizationEnvelope = Rlp.EncodedCanonicalAuthorizationEnvelope(txn);
+                byte[] message = DomainTag.AddTransactionDomainTag(canonicalAuthorizationEnvelope);
 
-            string str = Encoding.UTF8.GetString(message);
-            var res = await fcl.SignUserMessageAsync(str);
+                string str = Encoding.UTF8.GetString(message);
+                var res = await fcl.SignUserMessageAsync(str);
 
-            return Encoding.UTF8.GetBytes(res.Signature);
+                return Encoding.UTF8.GetBytes(res.Signature);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Fcl: failed to sign transaction envelope.", ex);
+            }
         }
 
         public Task<byte[]> SignTransactionPayload(FlowTransaction txn)
@@ -204,7 +223,14 @@ namespace DapperLabs.Flow.Sdk.Fcl
         {
             if (IsAuthenticated())
             {
-                fcl.Unauthenticate();
+                try
+                {
+                    fcl.Unauthenticate();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Fcl: failed to unauthenticate FLC.NET.", ex);
+                }
             }
         }
 
@@ -231,9 +257,20 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
             catch (Exception ex)
             {
+                string msg = $"FclProvider: Exception thrown calling Mutate: {ex.Message}. ";
+                if (ex.InnerException != null)
+                {
+                    msg += $"{ex.InnerException.Message}. ";
+
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        msg += $"{ex.InnerException.InnerException.Message}. ";
+                    }
+                }
+
                 return new FlowTransactionResponse
                 {
-                    Error = new FlowError($"FclProvider: Exception thrown calling Mutate: {ex.Message}", ex)
+                    Error = new FlowError(msg, ex)
                 };
             }
         }

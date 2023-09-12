@@ -12,6 +12,8 @@ using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Unity;
 using DapperLabs.Flow.Sdk.WalletConnect;
 using DapperLabs.Flow.Sdk.DevWallet;
+using DapperLabs.Flow.Sdk.Crypto;
+using DapperLabs.Flow.Sdk.Fcl;
 
 namespace FlowSDKDemo
 {
@@ -153,8 +155,8 @@ namespace FlowSDKDemo
 
             FlowConfig flowConfig = new FlowConfig();
 
-            flowConfig.NetworkUrl = FlowControl.Data.EmulatorSettings.emulatorEndpoint ?? "http://localhost:8888/v1"; // local emulator
-            //flowConfig.NetworkUrl = "https://rest-testnet.onflow.org/v1";  // testnet
+            //flowConfig.NetworkUrl = FlowControl.Data.EmulatorSettings.emulatorEndpoint ?? "http://localhost:8888/v1"; // local emulator
+            flowConfig.NetworkUrl = "https://rest-testnet.onflow.org/v1";  // testnet
             //flowConfig.NetworkUrl = "https://rest-mainnet.onflow.org/v1";  // mainnet
 
             flowConfig.Protocol = FlowConfig.NetworkProtocol.HTTP;
@@ -163,7 +165,7 @@ namespace FlowSDKDemo
             // Now register a Wallet Provider to use. 
 
             // Register DevWallet
-            FlowSDK.RegisterWalletProvider(new DevWalletProvider());
+            //FlowSDK.RegisterWalletProvider(new DevWalletProvider());
 
             // Register WalletConnect
             //IWallet walletProvider = new WalletConnectProvider();
@@ -176,6 +178,30 @@ namespace FlowSDKDemo
             //    ProjectUrl = "https://dapperlabs.com"
             //});
             //FlowSDK.RegisterWalletProvider(walletProvider);
+
+            // Register Niftory
+            //IWallet walletProvider = new DapperLabs.Flow.Sdk.Niftory.NiftoryProvider();
+            //walletProvider.Init(new DapperLabs.Flow.Sdk.Niftory.NiftoryConfig
+            //{
+            //    ClientId = "", // insert Niftory Client ID
+            //    AuthUrl = "https://auth.staging.niftory.com",
+            //    GraphQLUrl = "https://graphql.api.staging.niftory.com"
+            //});
+            //
+            //FlowSDK.RegisterWalletProvider(walletProvider);
+
+            // Register Fcl
+            IWallet walletProvider = new FclProvider();
+            walletProvider.Init(new FclConfig
+            {
+                Description = "An example description of  the project",
+                IconUri = "https://walletconnect.com/meta/favicon.ico",
+                Location = "",
+                Title = "Dapper Unity Example",
+                Url = "https://dapperlabs.com",
+                WalletConnectProjectId = "" // insert Project ID from Wallet Connect dashboard
+            });
+            FlowSDK.RegisterWalletProvider(walletProvider);
         }
 
         /// <summary>

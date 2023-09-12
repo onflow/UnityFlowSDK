@@ -1,5 +1,5 @@
-using Fcl.Net.Core;
 using System;
+using Fcl.Net.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,8 +16,9 @@ namespace DapperLabs.Flow.Sdk.Fcl
         public Button SelectButton;
         private FclServiceMethod Method;
         private string Endpoint;
+        private string Uid;
 
-        internal void Init(FclWalletProvider walletProvider, Action<FclServiceMethod, string> OnSelectedWallet)
+        internal void Init(FclWalletProvider walletProvider, Action<FclServiceMethod, string, string> OnSelectedWallet)
         {
             ProviderName.text = walletProvider.Name;
 
@@ -32,14 +33,15 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
             catch (Exception ex)
             {
-                Debug.LogError($"WalletSelectDialogProvider: Exception thrown creating Logo: {ex.Message}");
+                Debug.LogError($"Fcl: WalletSelectDialogProvider: Exception thrown creating Logo: {ex.Message}");
             }
             
             InstalledIndicator.SetActive(false);
             Method = walletProvider.Method;
             Endpoint = walletProvider.Endpoint;
+            Uid = walletProvider.Uid;
 
-            SelectButton.onClick.AddListener(() => { OnSelectedWallet(Method, Endpoint); });
+            SelectButton.onClick.AddListener(() => { OnSelectedWallet(Method, Endpoint, Uid); });
         }
     }
 }

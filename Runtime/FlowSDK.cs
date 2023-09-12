@@ -28,6 +28,7 @@ namespace DapperLabs.Flow.Sdk
     public class FlowSDK
     {
         internal static IWallet walletProvider = null;
+        internal static IWallet linkingWalletProvider = null;
 
         /// <summary>
         /// Initializes the Flow SDK. 
@@ -52,9 +53,10 @@ namespace DapperLabs.Flow.Sdk
         /// can be registered. 
         /// </summary>
         /// <param name="walletProvider">A concrete instance of IWallet</param>
-        public static void RegisterWalletProvider(IWallet walletProvider)
+        public static void RegisterWalletProvider(IWallet walletProvider, IWallet linkingWalletProvider = null)
         {
             FlowSDK.walletProvider = walletProvider;
+            FlowSDK.linkingWalletProvider = linkingWalletProvider;
         }
 
         /// <summary>
@@ -64,6 +66,11 @@ namespace DapperLabs.Flow.Sdk
         public static IWallet GetWalletProvider()
         {
             return walletProvider;
+        }
+
+        public static IWallet GetLinkingWalletProvider()
+        {
+            return linkingWalletProvider;
         }
     }
 }

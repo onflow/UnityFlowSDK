@@ -816,7 +816,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2829486293969734320}
   m_Direction: 0
   m_Value: 1
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1474,9 +1474,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: DapperLabs.Flow.Sdk.WalletConnect.WalletSelectDialog,
-          DapperLabs.FlowSDK.WalletConnect
+      - m_Target: {fileID: -2809353558856140842}
+        m_TargetAssemblyTypeName: DapperLabs.Flow.Sdk.Fcl.WalletSelectDialog, DapperLabs.FlowSDK.Fcl
         m_MethodName: OnCloseButtonClicked
         m_Mode: 1
         m_Arguments:

@@ -69,6 +69,11 @@
       "displayName": "NFT Browser",
       "description": "A sample NFT browser",
       "path": "Samples~/NFTBrowserExample"
-    }
+    },
+	{
+	  "displayName": "Walletless Onboarding Demo",
+	  "description": "Flow Words using Niftory for walletless onboarding, and FCL for account linking.",
+	  "path": "Samples~/FlowWordsNiftory"
+	}
   ]
 }

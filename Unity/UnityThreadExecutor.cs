@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("DapperLabs.FlowSDK.WalletConnect")]
+[assembly: InternalsVisibleTo("DapperLabs.FlowSDK.Fcl")]
 
 namespace DapperLabs.Flow.Sdk.Unity
 {

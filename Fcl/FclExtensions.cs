@@ -1,9 +1,8 @@
+using System.Collections.Generic;
 using DapperLabs.Flow.Sdk.Cadence;
 using DapperLabs.Flow.Sdk.Cadence.Types;
 using Flow.Net.Sdk.Core.Cadence;
 using Flow.Net.Sdk.Core.Cadence.Types;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {

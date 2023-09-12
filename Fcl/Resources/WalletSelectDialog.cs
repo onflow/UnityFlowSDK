@@ -1,6 +1,6 @@
-using Fcl.Net.Core;
 using System;
 using System.Collections.Generic;
+using Fcl.Net.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +22,7 @@ namespace DapperLabs.Flow.Sdk.Fcl
         [Header("Prefabs")]
         public GameObject WalletSelectProviderPrefab;
 
-        private Action<FclServiceMethod, string> _OnSelectedWallet = null;
+        private Action<FclServiceMethod, string, string> _OnSelectedWallet = null;
         private bool _Initialised = false;
         private float _loadingTimer = 0.0f;
 
@@ -44,7 +44,7 @@ namespace DapperLabs.Flow.Sdk.Fcl
                 _loadingTimer -= Time.deltaTime;
                 if (_loadingTimer <= 0.0f)
                 {
-                    Debug.LogError("Wallet Select dialog timed out.");
+                    Debug.LogError("Fcl: Wallet Select dialog timed out.");
                     Destroy(gameObject);
                 }
             }
@@ -56,11 +56,11 @@ namespace DapperLabs.Flow.Sdk.Fcl
         /// <param name="header">Header for the dialog.</param>
         /// <param name="providers">Array of WalletSelectDialog.WalletProviders to present to the user.</param>
         /// <param name="OnSelectedWallet">Callback to call when user selects a wallet provider.</param>
-        public bool Init(string header, List<FclWalletProvider> providers, Action<FclServiceMethod, string> OnSelectedWallet)
+        public bool Init(string header, List<FclWalletProvider> providers, Action<FclServiceMethod, string, string> OnSelectedWallet)
         {
             if (WalletSelectProviderPrefab == null)
             {
-                Debug.LogError("<b>WalletSelectProviderPrefab</b> component reference not assigned on WalletSelectDialog. Unable to list wallets.", this);
+                Debug.LogError("Fcl: <b>WalletSelectProviderPrefab</b> component reference not assigned on WalletSelectDialog. Unable to list wallets.", this);
                 return false;
             }
 

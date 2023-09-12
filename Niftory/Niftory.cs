@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.Niftory
 {
-    public class NiftoryProvider : IWallet
+    public class NiftoryProvider : IWallet, IWalletlessOnboarding
     {
         private NiftoryConfig _config = null;
         private static readonly HttpClient _httpClient = new();
@@ -420,9 +420,17 @@ executeTransaction(address: $address, transaction: $transaction, args: $args, na
             NiftoryTransactionResponse result = await SendGraphQLRequest<NiftoryTransactionResponse>(executeTransactionQuery, null, vars);
             if (result.Errors != null && result.Errors.Length > 0)
             {
+                string errorMessage = string.Join("\n", result.Errors.Select(e => e.Message));
+
+                // Invalid cadence type indicates the Niftory API does not recognise the type.
+                if (errorMessage.Contains("Invalid cadence type"))
+                {
+                    errorMessage = errorMessage.Replace("Invalid cadence type", "Cadence type not supported by Niftory");
+                }
+                
                 return new FlowTransactionResponse
                 {
-                    Error = new FlowError(string.Join("\n", result.Errors.Select(e => e.Message)))
+                    Error = new FlowError(errorMessage)
                 };
             }
 
@@ -447,7 +455,7 @@ executeTransaction(address: $address, transaction: $transaction, args: $args, na
                     return await MutateAsync(script, arguments, resendAttempt + 1);
                 }
             }
-
+            
             return new FlowTransactionResponse
             {
                 Id = result.Data.Transaction.Hash,
@@ -510,6 +518,198 @@ executeTransaction(address: $address, transaction: $transaction, args: $args, na
             _httpClient.DefaultRequestHeaders.Clear();
 
             Debug.Log("Niftory: UnAuthenticate() - Authentication Cleared");
+        }
+
+        public async Task LinkToAccount()
+        {
+            IWallet linkingWalletProvider = FlowSDK.GetLinkingWalletProvider();
+            if (linkingWalletProvider == null)
+            {
+                throw new Exception("Cannot link to an account, because no linking wallet provider was registered. See FlowSDK.RegisterWalletProvider()");
+            }
+
+            try
+            {
+                await linkingWalletProvider.Authenticate("", async (parentAddress) => {
+                    Debug.Log($"LinkToAccount address: {parentAddress}");
+
+                    const string script1 = @"
+                        #allowAccountLinking
+
+                        import MetadataViews from 0x631e88ae7f1d7c20
+                        import HybridCustody from 0x294e44e1ec6993c6
+                        import CapabilityFactory from 0x294e44e1ec6993c6
+                        import CapabilityFilter from 0x294e44e1ec6993c6
+                        import CapabilityDelegator from 0x294e44e1ec6993c6
+
+                        transaction(parent: Address, factoryAddress: Address, filterAddress: Address) {
+                            prepare(acct: AuthAccount) {
+                                // Configure OwnedAccount if it doesn't exist
+                                if acct.borrow<&HybridCustody.OwnedAccount>(from: HybridCustody.OwnedAccountStoragePath) == nil {
+                                    var acctCap = acct.getCapability<&AuthAccount>(HybridCustody.LinkedAccountPrivatePath)
+                                    if !acctCap.check() {
+                                        acctCap = acct.linkAccount(HybridCustody.LinkedAccountPrivatePath)!
+                                    }
+                                    let ownedAccount <- HybridCustody.createOwnedAccount(acct: acctCap)
+                                    acct.save(<-ownedAccount, to: HybridCustody.OwnedAccountStoragePath)
+                                }
+
+                                // check that paths are all configured properly
+                                acct.unlink(HybridCustody.OwnedAccountPrivatePath)
+                                acct.link<&HybridCustody.OwnedAccount{HybridCustody.BorrowableAccount, HybridCustody.OwnedAccountPublic, MetadataViews.Resolver}>(HybridCustody.OwnedAccountPrivatePath, target: HybridCustody.OwnedAccountStoragePath)
+
+                                acct.unlink(HybridCustody.OwnedAccountPublicPath)
+                                acct.link<&HybridCustody.OwnedAccount{HybridCustody.OwnedAccountPublic, MetadataViews.Resolver}>(HybridCustody.OwnedAccountPublicPath, target: HybridCustody.OwnedAccountStoragePath)
+
+                                let owned = acct.borrow<&HybridCustody.OwnedAccount>(from: HybridCustody.OwnedAccountStoragePath)
+                                    ?? panic(""owned account not found"")
+                    
+                                let factory = getAccount(factoryAddress).getCapability<&CapabilityFactory.Manager{CapabilityFactory.Getter}>(CapabilityFactory.PublicPath)
+                                   assert(factory.check(), message: ""factory address is not configured properly"")
+                    
+                                let filter = getAccount(filterAddress).getCapability<&{CapabilityFilter.Filter}>(CapabilityFilter.PublicPath)
+                                   assert(filter.check(), message: ""capability filter is not configured properly"")
+                    
+                                owned.publishToParent(parentAddress: parent, factory: factory, filter: filter)
+                            }
+                        }";
+
+                    List<CadenceBase> args1 = new List<CadenceBase>
+                    {
+                        new CadenceAddress(parentAddress),
+                        new CadenceAddress(_flowAddress),
+                        new CadenceAddress(_flowAddress)
+                    };
+
+                    Debug.Log("Submitting first txn - publish account for the parent...");
+
+                    var response = await Mutate(script1, args1);
+
+                    Debug.Log($"Txn Id: {response.Id}");
+
+                    if (response.Error != null)
+                    {
+                        throw new Exception($"Mutate Error: {response.Error.Message}");
+                    }
+
+                    FlowTransactionResult result = null;
+                    FlowTransactionStatus txnStatus = FlowTransactionStatus.UNKNOWN;
+                    while (txnStatus < FlowTransactionStatus.EXECUTED)
+                    {
+                        await Task.Delay(2000);
+                        result = await Transactions.GetResult(response.Id);
+                        txnStatus = result.Status;
+
+                        if (result.Error != null || result.ErrorMessage != string.Empty)
+                        {
+                            break;
+                        }
+
+                        if (result.Error != null)
+                        {
+                            throw new Exception($"Error getting transaction result: {result.Error.Message}");
+                        }
+
+                        if (result.ErrorMessage != string.Empty)
+                        {
+                            throw new Exception($"Transaction execution error: {result.ErrorMessage}");
+                        }
+                    }
+
+                    Debug.Log("First txn complete.");
+
+                    const string script2 = @"
+                        import MetadataViews from 0x631e88ae7f1d7c20
+
+                        import HybridCustody from 0x294e44e1ec6993c6
+                        import CapabilityFilter from 0x294e44e1ec6993c6
+
+                        transaction(childAddress: Address, filterAddress: Address?) {
+                            prepare(acct: AuthAccount) {
+                                var filter: Capability<&{CapabilityFilter.Filter}>? = nil
+                                if filterAddress != nil {
+                                    filter = getAccount(filterAddress!).getCapability<&{CapabilityFilter.Filter}>(CapabilityFilter.PublicPath)
+                                }
+
+                                if acct.borrow<&HybridCustody.Manager>(from: HybridCustody.ManagerStoragePath) == nil {
+                                    let m <- HybridCustody.createManager(filter: filter)
+                                    acct.save(<- m, to: HybridCustody.ManagerStoragePath)
+                    
+                                    acct.unlink(HybridCustody.ManagerPublicPath)
+                                    acct.unlink(HybridCustody.ManagerPrivatePath)
+                    
+                                    acct.link<&HybridCustody.Manager{HybridCustody.ManagerPrivate, HybridCustody.ManagerPublic}>(
+                                        HybridCustody.ManagerPrivatePath,
+                                        target: HybridCustody.ManagerStoragePath
+                                    )
+                                    acct.link<&HybridCustody.Manager{HybridCustody.ManagerPublic}>(
+                                        HybridCustody.ManagerPublicPath,
+                                        target: HybridCustody.ManagerStoragePath
+                                    )
+                                }
+
+                                let inboxName = HybridCustody.getChildAccountIdentifier(acct.address)
+                                let cap = acct.inbox.claim<&HybridCustody.ChildAccount{HybridCustody.AccountPrivate, HybridCustody.AccountPublic, MetadataViews.Resolver}>(
+                                        inboxName,
+                                        provider: childAddress
+                                    ) ?? panic(""child account cap not found"")
+                    
+                                let manager = acct.borrow<&HybridCustody.Manager>(from: HybridCustody.ManagerStoragePath)
+                                    ?? panic(""manager no found"")
+                    
+                                manager.addAccount(cap: cap)
+                            }
+                        }";
+
+                    List<CadenceBase> args2 = new List<CadenceBase>
+                    {
+                        new CadenceAddress(_flowAddress),
+                        new CadenceAddress(_flowAddress)
+                    };
+
+                    Debug.Log("Submitting second txn - claim account...");
+
+                    response = await linkingWalletProvider.Mutate(script2, args2);
+
+                    Debug.Log($"Txn Id: {response.Id}");
+
+                    if (response.Error != null)
+                    {
+                        throw new Exception($"Mutate Error: {response.Error.Message}");
+                    }
+
+                    txnStatus = FlowTransactionStatus.UNKNOWN;
+                    while (txnStatus < FlowTransactionStatus.EXECUTED)
+                    {
+                        await Task.Delay(2000);
+                        result = await Transactions.GetResult(response.Id);
+                        txnStatus = result.Status;
+
+                        if (result.Error != null || result.ErrorMessage != string.Empty)
+                        {
+                            break;
+                        }
+
+                        if (result.Error != null)
+                        {
+                            throw new Exception($"Error getting transaction result: {result.Error.Message}");
+                        }
+
+                        if (result.ErrorMessage != string.Empty)
+                        {
+                            throw new Exception($"Transaction execution error: {result.ErrorMessage}");
+                        }
+                    }
+
+                    Debug.Log("Second txn complete.");
+                }, () => {
+                    Debug.LogError("An error occurred authenticating with linked wallet provider.");
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Niftory: LinkToAccount: Exception thrown authenticating with linked wallet provider: {ex.Message}", ex);
+            }
         }
     }
 }
