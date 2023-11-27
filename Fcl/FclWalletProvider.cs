@@ -2,6 +2,9 @@ using Fcl.Net.Core;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
+    /// <summary>
+    /// Represents an FCL supported wallet, which can be returned by the Discovery Service. 
+    /// </summary>
     public class FclWalletProvider
     {
         public string Name { get; set; }

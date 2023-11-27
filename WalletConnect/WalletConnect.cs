@@ -107,7 +107,7 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             {
                 // Load default QR Code Dialog prefab
                 Debug.Log("<b>WalletSelectDialogPrefab</b> not assigned in WalletConnectConfig, using default dialog prefab.");
-                prefab = Resources.Load("WalletSelectDialogPrefab");
+                prefab = Resources.Load("WalletSelectDialogPrefab_WalletConnect");
             }
 
             var walletSelectDialog = UnityEngine.Object.Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
@@ -244,13 +244,13 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
 #if UNITY_ANDROID
             string[] appsToCheck = new string[2]
             {
-                "io.outblock.lilico", // Lilico
+                "io.outblock.lilico", // Lilico / Flow Ref
                 "com.dapperlabs.dapper.tokens.internal" // Dapper SC
             };
 #elif UNITY_IOS
             string[] appsToCheck = new string[2]
             {
-                "lilico://wc", // Lilico
+                "lilico://wc", // Lilico / Flow Ref
                 "dapper-pro://wc" // Dapper SC
             };
 #endif
@@ -292,11 +292,11 @@ namespace DapperLabs.Flow.Sdk.WalletConnect
             WalletSelectDialog.WalletProviderData[] wcProviders = new WalletSelectDialog.WalletProviderData[numProviders];
             wcProviders[0] = new WalletSelectDialog.WalletProviderData
             {
-                Name = "Lilico",
+                Name = "Flow Wallet",
                 IsInstalled = installedApps[0],
-                Icon = Resources.Load<Texture2D>("WalletSelectIcons/lilicoIcon"),
-                BaseUri = "https://link.lilico.app",
-                ConnectUri = $"https://link.lilico.app/wc?uri={urlEncoded}"
+                Icon = Resources.Load<Texture2D>("WalletSelectIcons/flowWalletIcon"),
+                BaseUri = "https://frw-link.lilico.app",
+                ConnectUri = $"https://frw-link.lilico.app/wc?uri={urlEncoded}"
             };
 
             if (installedApps[1])

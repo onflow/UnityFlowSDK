@@ -19,29 +19,40 @@ using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
+    /// <summary>
+    /// This wallet provider implements the FCL (Flow Client Library) specification, which can be viewed here:
+    /// https://github.com/onflow/flips/blob/main/application/20221108-fcl-specification.md
+    /// It connects to Flow's Discovery Service to determine which wallets are supported. 
+    /// </summary>
     public class FclProvider : IWallet
     {
         global::Fcl.Net.Core.Fcl fcl = null;
         private static readonly HttpClient _httpClient = new();
 
+        /// <summary>
+        /// Connects the app to the user's wallet, obtaining their Flow address. 
+        /// This calls the Discovery Service endpoint, which returns a list of supported wallet providers. These
+        /// are then displayed to the user to choose from. 
+        /// </summary>
+        /// <param name="username">Ignored for FCL.</param>
+        /// <param name="OnAuthSuccess">Callback for when the user connects a wallet. Their Flow address is passed in as a string.</param>
+        /// <param name="OnAuthFailed">Callback if an error occurred.</param>
+        /// <returns>An async Task. This function can be awaited.</returns>
         public async Task Authenticate(string username, Action<string> OnAuthSuccess, Action OnAuthFailed)
         {
-            UnityEngine.Object prefab = Resources.Load("WalletSelectDialogPrefab");
+            UnityEngine.Object prefab = Resources.Load("WalletSelectDialogPrefab_FCL");
             var walletSelectDialog = UnityEngine.Object.Instantiate(prefab, Vector3.zero, Quaternion.identity) as GameObject;
 
             try
             {
                 var serviceProviders = await fcl.DiscoveryServicesAsync();
 
-                Debug.Log($"Fcl: discovery service returned {serviceProviders.Count} providers.");
                 var providers = new List<FclWalletProvider>();
 
                 foreach (FclService service in serviceProviders)
                 {
                     if (service.Method != FclServiceMethod.Data && service.Provider.Name != "WalletConnect")
                     {
-                        Debug.Log($"{service.Provider.Name}. Method: {service.Method}. Endpoint: {service.Endpoint}. uid: {service.Uid}");
-
                         providers.Add(new FclWalletProvider
                         {
                             Name = service.Provider.Name,
@@ -92,6 +103,10 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
         }
 
+        /// <summary>
+        /// Retrieves the account associated with the FCL connected wallet.
+        /// </summary>
+        /// <returns>An SdkAccount object containing the authenticated Flow address, or null if there's no auth.</returns>
         public SdkAccount GetAuthenticatedAccount()
         {
             if (IsAuthenticated())
@@ -105,6 +120,10 @@ namespace DapperLabs.Flow.Sdk.Fcl
             return null;
         }
 
+        /// <summary>
+        /// Initializes the FCL provider. Must be called before calling anything else. 
+        /// </summary>
+        /// <param name="config">Reference to a FclConfig object containing config for FCL.</param>
         public void Init(WalletConfig config)
         {
             try
@@ -191,11 +210,21 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
         }
 
+        /// <summary>
+        /// Checks if the user is authenticated with FCL. 
+        /// </summary>
+        /// <returns>True if the user is authenticated.</returns>
         public bool IsAuthenticated()
         {
             return fcl != null && fcl.User != null && fcl.User.LoggedIn;
         }
 
+        /// <summary>
+        /// Requests FCL to sign a transaction envelope. The request will appear in
+        /// the user's connected wallet. 
+        /// </summary>
+        /// <param name="txn">The transaction to be signed.</param>
+        /// <returns>The signature in bytes.</returns>
         public async Task<byte[]> SignTransactionEnvelope(FlowTransaction txn)
         {
             try
@@ -214,11 +243,19 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
         }
 
+        /// <summary>
+        /// Not yet implemented - stubbed for future use. 
+        /// </summary>
+        /// <param name="txn">The transaction to be signed.</param>
+        /// <returns>The signature in bytes.</returns>
         public Task<byte[]> SignTransactionPayload(FlowTransaction txn)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Unauthenticates FCL. 
+        /// </summary>
         public void Unauthenticate()
         {
             if (IsAuthenticated())
@@ -234,6 +271,12 @@ namespace DapperLabs.Flow.Sdk.Fcl
             }
         }
 
+        /// <summary>
+        /// Performs a mutate operation on the Flow blockchain via a transaction script. 
+        /// </summary>
+        /// <param name="script">The transaction script to be executed.</param>
+        /// <param name="arguments">The arguments for the transaction script.</param>
+        /// <returns></returns>
         public async Task<FlowTransactionResponse> Mutate(string script, List<CadenceBase> arguments = null)
         {
             try

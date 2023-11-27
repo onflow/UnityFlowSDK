@@ -550,7 +550,7 @@ GameObject:
   - component: {fileID: 4500162063134750305}
   - component: {fileID: 6524846551301147999}
   m_Layer: 5
-  m_Name: WalletSelectDialogPrefab
+  m_Name: WalletSelectDialogPrefab_WalletConnect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

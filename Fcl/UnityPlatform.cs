@@ -5,6 +5,9 @@ using Fcl.Net.Core.Models;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
+    /// <summary>
+    /// Unity implementation of IPlatform. 
+    /// </summary>
     public class UnityPlatform : IPlatform
     {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

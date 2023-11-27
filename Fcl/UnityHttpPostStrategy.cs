@@ -12,13 +12,27 @@ using UnityEngine;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
+    /// <summary>
+    /// Implements the HTTP/POST Strategy for the Unity platform. 
+    /// </summary>
     public class UnityHttpPostStrategy : HttpPostStrategy
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="fetchService">Fetch Service to be used for http requests.</param>
+        /// <param name="localViews">Not used.</param>
         public UnityHttpPostStrategy(FetchService fetchService, Dictionary<FclServiceMethod, ILocalView> localViews) : base(fetchService, localViews)
         {
             
         }
 
+        /// <summary>
+        /// Sends the http request and polls for the response. 
+        /// </summary>
+        /// <typeparam name="T">Must be type FclAuthResponse.</typeparam>
+        /// <param name="response">The object to be populated with the response.</param>
+        /// <returns></returns>
         public override async Task<T> PollAsync<T>(T response)
         {
             try

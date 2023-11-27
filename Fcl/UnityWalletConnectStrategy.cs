@@ -52,6 +52,9 @@ namespace DapperLabs.Flow.Sdk.Fcl
         }
     }
 
+    /// <summary>
+    /// Implements the WC/RPC Strategy for the Unity platform. 
+    /// </summary>
     public class UnityWalletConnectStrategy : IStrategy
     {
         private WalletConnectConfig _config;
@@ -62,6 +65,11 @@ namespace DapperLabs.Flow.Sdk.Fcl
         ConnectedData _connectedData = null;
         SessionStruct _session;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="fetchService">Not used.</param>
+        /// <param name="config">Wallet Connect configuration to be used.</param>
         public UnityWalletConnectStrategy(FetchService fetchService, WalletConnectConfig config)
         {
             _config = config;

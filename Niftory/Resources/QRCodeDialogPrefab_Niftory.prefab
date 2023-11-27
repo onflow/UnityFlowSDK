@@ -789,7 +789,7 @@ GameObject:
   - component: {fileID: 6151378056388196686}
   - component: {fileID: 3391942879187033647}
   m_Layer: 5
-  m_Name: CopyButton
+  m_Name: UriButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -905,7 +905,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 7600390270922205694}
           m_TargetAssemblyTypeName: DapperLabs.Flow.Sdk.Niftory.QRCodeDialog, DapperLabs.FlowSDK.Niftory
-          m_MethodName: OnCopyUriClicked
+          m_MethodName: OnUriClicked
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -927,7 +927,7 @@ GameObject:
   - component: {fileID: 6316860458181360654}
   - component: {fileID: 2468901925988318465}
   m_Layer: 5
-  m_Name: CopyText
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1188,5 +1188,5 @@ MonoBehaviour:
   LoadingIndicator: {fileID: 759573339181622846}
   Dialog: {fileID: 4273445334421840022}
   QrCodeObject: {fileID: 7121195203525017783}
-  UriCopyButtonText: {fileID: 2468901925988318465}
+  UriButtonText: {fileID: 2468901925988318465}
   CodeText: {fileID: 5183898715822533520}

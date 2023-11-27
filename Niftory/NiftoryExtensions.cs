@@ -1,9 +1,8 @@
-using DapperLabs.Flow.Sdk.Cadence;
-using DapperLabs.Flow.Sdk.Cadence.Types;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using DapperLabs.Flow.Sdk.Cadence;
+using DapperLabs.Flow.Sdk.Cadence.Types;
 using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
 
 namespace DapperLabs.Flow.Sdk.Niftory

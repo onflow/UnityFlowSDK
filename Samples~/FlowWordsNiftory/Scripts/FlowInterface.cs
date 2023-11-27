@@ -1,18 +1,17 @@
 using System;
-using DapperLabs.Flow.Sdk;
-using DapperLabs.Flow.Sdk.Cadence;
-using DapperLabs.Flow.Sdk.Crypto;
-using DapperLabs.Flow.Sdk.DataObjects;
-using DapperLabs.Flow.Sdk.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using UnityEngine;
-using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
+using DapperLabs.Flow.Sdk;
+using DapperLabs.Flow.Sdk.Cadence;
+using DapperLabs.Flow.Sdk.Crypto;
+using DapperLabs.Flow.Sdk.DataObjects;
+using DapperLabs.Flow.Sdk.Unity;
 using DapperLabs.Flow.Sdk.Fcl;
-using Newtonsoft.Json;
+using Convert = DapperLabs.Flow.Sdk.Cadence.Convert;
+using UnityEngine;
 
 namespace FlowWordsNiftory
 {
@@ -24,7 +23,6 @@ namespace FlowWordsNiftory
         [SerializeField] CadenceTransactionAsset getCurrentGameStateTxn;
         [SerializeField] CadenceScriptAsset checkWordScript;
         [SerializeField] CadenceTransactionAsset submitGuessTxn;
-        [SerializeField] CadenceScriptAsset getOwnedAddressScript;
 
         // Cadence scripts to get the data needed to display the High Scores panel
         [Header("Highscore Scripts")]
@@ -394,32 +392,6 @@ namespace FlowWordsNiftory
             }
 
             walletlessOnboarding.LinkToAccount();
-        }
-
-        public IEnumerator GetParentAddress(Action<string> onSuccessCallback, Action<string> onFailureCallback)
-        {
-            string playerWalletAddress = FlowSDK.GetWalletProvider().GetAuthenticatedAccount().Address;
-
-            var task = Scripts.ExecuteAtLatestBlock(DoTextSubstitutions(getOwnedAddressScript.text), new CadenceAddress(playerWalletAddress));
-
-            // wait for completion
-            bool complete = false;
-            while (!complete)
-            {
-                complete = task.IsCompleted;
-                yield return null;
-            }
-
-            // check for errors
-            if (task.Result.Error != null)
-            {
-                onFailureCallback(task.Result.Error.Message);
-                yield break;
-            }
-
-            List<string> ownedAddresses = Convert.FromCadence<List<string>>(task.Result.Value);
-
-            onSuccessCallback(ownedAddresses.Count > 0 ? ownedAddresses[0] : "");
         }
     }
 }

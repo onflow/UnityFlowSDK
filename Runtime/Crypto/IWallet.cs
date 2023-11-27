@@ -58,6 +58,12 @@ namespace DapperLabs.Flow.Sdk.Crypto
         /// <returns>The FlowAccount of the authenticated user.</returns>
         public SdkAccount GetAuthenticatedAccount();
 
+        /// <summary>
+        /// Performs a mutate operation on the Flow blockchain via a transaction script. 
+        /// </summary>
+        /// <param name="script">The transaction script to be executed.</param>
+        /// <param name="arguments">The arguments for the transaction script.</param>
+        /// <returns></returns>
         public Task<FlowTransactionResponse> Mutate(string script, List<CadenceBase> arguments = null);
     }
 

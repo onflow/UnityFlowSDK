@@ -226,10 +226,10 @@ GameObject:
   - component: {fileID: 8598684608852697252}
   - component: {fileID: 4573341558022148688}
   - component: {fileID: 5707558404689693093}
-  - component: {fileID: 93036148541199422}
   - component: {fileID: 6333236236091919944}
+  - component: {fileID: 4223920379961607496}
   m_Layer: 5
-  m_Name: WalletSelectProviderPrefab
+  m_Name: WalletSelectProviderPrefab_FCL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -366,22 +366,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &93036148541199422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3713828895212153682}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a277b16a5d547b41835b51f58946400, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ProviderIcon: {fileID: 5882064002459083265}
-  ProviderName: {fileID: 7091696616569861709}
-  InstalledIndicator: {fileID: 2971606583936909573}
-  SelectButton: {fileID: 5707558404689693093}
 --- !u!114 &6333236236091919944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,6 +386,22 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &4223920379961607496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3713828895212153682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2659d9cfb4606814a85a71ebf8a3e849, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ProviderIcon: {fileID: 5882064002459083265}
+  ProviderName: {fileID: 7091696616569861709}
+  InstalledIndicator: {fileID: 2971606583936909573}
+  SelectButton: {fileID: 5707558404689693093}
 --- !u!1 &5199246806669704012
 GameObject:
   m_ObjectHideFlags: 0

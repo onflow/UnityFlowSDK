@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using ZXing;
 using ZXing.QrCode;
@@ -17,7 +18,7 @@ namespace DapperLabs.Flow.Sdk.Niftory
         [Header("Dialog")]
         public GameObject Dialog;
         public RawImage QrCodeObject;
-        public Text UriCopyButtonText;
+        [FormerlySerializedAs("UriCopyButtonText")] public Text UriButtonText;
         public Text CodeText;
 
         private bool _Initialised = false;
@@ -47,7 +48,7 @@ namespace DapperLabs.Flow.Sdk.Niftory
                 return false;
             }
 
-            if (UriCopyButtonText == null)
+            if (UriButtonText == null)
             {
                 Debug.LogError("<b>UriCopyButtonText</b> component reference not assigned on QrCodeDialog. Unable to render URI.", this);
                 return false;
@@ -70,6 +71,10 @@ namespace DapperLabs.Flow.Sdk.Niftory
             _Initialised = true;
             Dialog.SetActive(true);
             LoadingIndicator.SetActive(false);
+            
+#if UNITY_ANDROID || UNITY_IOS
+            UriButtonText.text = _Uri; 
+#endif
 
             return true;
         }
@@ -98,28 +103,32 @@ namespace DapperLabs.Flow.Sdk.Niftory
         }
 
         /// <summary>
-        /// Callback when Copy Uri button is clicked. 
+        /// Callback when Uri button is clicked. 
         /// </summary>
-        public void OnCopyUriClicked()
+        public void OnUriClicked()
         {
-            UriCopyButtonText.text = "<b>Copied</b>";
+#if !(UNITY_ANDROID || UNITY_IOS)
+            UriButtonText.text = "Copied";
             GUIUtility.systemCopyBuffer = _Uri;
+#else
+            Application.OpenURL(_Uri);
+#endif
         }
 
         /// <summary>
-        /// Callback when mouse hovers over Copy Uri button. 
+        /// Callback when mouse hovers over Uri button. 
         /// </summary>
         public void OnCopyUriMouseHoverEnter()
         {
-            UriCopyButtonText.text = "<b>Copy to Clipboard</b>";
+            UriButtonText.fontStyle = FontStyle.Bold;
         }
 
         /// <summary>
-        /// Callback when mouse leaves Copy Uri button. 
+        /// Callback when mouse leaves Uri button. 
         /// </summary>
         public void OnCopyUriMouseHoverExit()
         {
-            UriCopyButtonText.text = "Copy to Clipboard";
+            UriButtonText.fontStyle = FontStyle.Normal;
         }
 
         /// <summary>

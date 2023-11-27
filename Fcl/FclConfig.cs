@@ -2,6 +2,9 @@ using DapperLabs.Flow.Sdk.Crypto;
 
 namespace DapperLabs.Flow.Sdk.Fcl
 {
+    /// <summary>
+    /// Configuration for initializing FCL. 
+    /// </summary>
     public class FclConfig : WalletConfig
     {
         public string IconUri;
